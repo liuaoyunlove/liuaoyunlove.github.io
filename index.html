@@ -1,0 +1,3300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>DSM Mitumba Orders · Kariakoo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── TOKENS ─────────────────────────────────────────── */
+:root{
+  --bg:#0c0a1e;--bg2:#13102a;--bg3:#1a1635;
+  --card:rgba(255,255,255,.04);--bdr:rgba(255,255,255,.08);
+  --gold:#f59e0b;--gold2:#fbbf24;--gold-d:rgba(245,158,11,.15);
+  --green:#10b981;--red:#ef4444;--blue:#6366f1;
+  --orange:#f97316;--purple:#a855f7;
+  --text:#f1f5f9;--t2:rgba(255,255,255,.6);--t3:rgba(255,255,255,.28);
+  --r:14px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:'DM Sans','Noto Sans SC',system-ui,sans-serif;font-size:14px}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+input,select,textarea{font-family:inherit;outline:none}
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+#auth-screen{position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;background:linear-gradient(160deg,#0c0a1e,#180800,#0c0a1e);
+  padding:16px;overflow-y:auto;z-index:900}
+#app{height:100vh;display:flex;flex-direction:column;overflow:hidden;display:none}
+#topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--bdr);
+  flex-shrink:0;min-height:50px;gap:10px}
+#main{flex:1;overflow:hidden;display:flex}
+#sidebar{width:210px;background:var(--bg2);border-right:1px solid var(--bdr);
+  overflow-y:auto;flex-shrink:0;padding:6px 0;display:flex;flex-direction:column}
+#content{flex:1;overflow-y:auto;padding:14px}
+#bottom-nav{display:none;background:var(--bg2);border-top:1px solid var(--bdr);flex-shrink:0}
+
+/* ── AUTH ───────────────────────────────────────────── */
+.auth-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:26px 22px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.auth-logo{text-align:center;margin-bottom:20px}
+.logo-box{width:68px;height:68px;border-radius:16px;
+  background:linear-gradient(135deg,#fbbf24,#f59e0b);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 10px;font-weight:900;font-size:13px;color:#000;
+  box-shadow:0 8px 24px rgba(245,158,11,.35)}
+.auth-title{font-size:20px;font-weight:900;text-align:center;margin-bottom:3px}
+.auth-sub{font-size:11px;color:var(--t3);text-align:center}
+.auth-links{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:14px}
+.auth-links a{color:var(--gold);font-size:13px;cursor:pointer;text-decoration:none}
+
+/* ── SIDEBAR ────────────────────────────────────────── */
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;
+  cursor:pointer;color:var(--t2);font-size:13px;font-weight:500;
+  transition:all .15s;position:relative}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:var(--gold-d);color:var(--gold);font-weight:700}
+.nav-item.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;
+  width:3px;background:var(--gold);border-radius:0 3px 3px 0}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.nav-lbl{flex:1}
+.nav-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;
+  padding:1px 5px;border-radius:99px;min-width:17px;text-align:center}
+
+/* ── BOTTOM NAV ─────────────────────────────────────── */
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:7px 4px 9px;cursor:pointer;color:var(--t3);
+  font-size:10px;font-weight:600;gap:2px;transition:color .15s}
+.bnav.active{color:var(--gold)}
+.bicon{font-size:20px;line-height:1}
+
+/* ── TOPBAR ─────────────────────────────────────────── */
+.brand{display:flex;align-items:center;gap:8px}
+.brand-box{width:30px;height:30px;border-radius:7px;
+  background:linear-gradient(135deg,#fbbf24,#f59e0b);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:9px;color:#000;flex-shrink:0}
+.brand-name{font-weight:800;font-size:14px}
+.brand-sub{font-size:9px;color:var(--t3)}
+#topbar-right{display:flex;align-items:center;gap:8px}
+.lang-btn{padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid var(--bdr);background:transparent;color:var(--t3)}
+.lang-btn.active{background:var(--gold-d);color:var(--gold);border-color:var(--gold)}
+#notif-bell{position:relative;width:32px;height:32px;border-radius:var(--rs);
+  background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px}
+#notif-dot{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;padding:1px 4px;border-radius:99px;
+  min-width:15px;text-align:center;display:none}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--gold-d);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;color:var(--gold);font-size:12px;cursor:pointer;flex-shrink:0}
+
+/* ── FORMS ──────────────────────────────────────────── */
+.form-g{margin-bottom:12px}
+.lbl{display:block;font-size:10px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.inp{width:100%;padding:10px 12px;background:rgba(255,255,255,.05);
+  border:1px solid var(--bdr);border-radius:var(--rs);color:var(--text);
+  font-size:14px;transition:border .15s}
+.inp:focus{border-color:var(--gold);background:rgba(245,158,11,.04)}
+.inp::placeholder{color:var(--t3)}
+select.inp option{background:#1a1635}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── BUTTONS ────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:9px 15px;border-radius:var(--rs);font-size:13px;font-weight:700;
+  transition:all .15s;cursor:pointer}
+.btn:active{transform:scale(.96)}
+.btn-gold{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000}
+.btn-gold:hover{box-shadow:0 4px 16px rgba(245,158,11,.3)}
+.btn-dark{background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--bdr)}
+.btn-dark:hover{background:rgba(255,255,255,.12)}
+.btn-green{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.btn-red{background:rgba(239,68,68,.2);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.btn-orange{background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.3)}
+.btn-red-soft{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-lg{padding:14px;font-size:15px}
+.w100{width:100%}
+.mt8{margin-top:8px}.mt10{margin-top:10px}.mt12{margin-top:12px}.mt14{margin-top:14px}
+.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mb14{margin-bottom:14px}
+.mb0{margin-bottom:0}
+.pay-btn{justify-content:center}
+
+/* ── CARDS ──────────────────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:14px}
+.card-disc{border-color:var(--orange)}
+.card-warn{border-color:var(--gold)}
+.card-overdue{border-color:var(--red);animation:pulse-red 2s infinite}
+.card-container{margin-bottom:12px;cursor:default}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+.card-title{font-size:11px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+
+/* ── STAT CARDS ─────────────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 14px}
+.stat-warn{border-color:var(--orange)}
+.stat-lbl{font-size:10px;color:var(--t3);font-weight:600;margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:900}
+.stat-sub{font-size:10px;color:var(--t3);margin-top:2px}
+
+/* ── BADGES ─────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:3px 8px;
+  border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-yellow{background:rgba(245,158,11,.15);color:#fbbf24}
+.badge-green{background:rgba(16,185,129,.15);color:#34d399}
+.badge-blue{background:rgba(99,102,241,.15);color:#a5b4fc}
+.badge-red{background:rgba(239,68,68,.15);color:#f87171}
+.badge-orange{background:rgba(249,115,22,.15);color:#fb923c}
+.badge-purple{background:rgba(168,85,247,.15);color:#c084fc}
+.badge-gray{background:rgba(255,255,255,.07);color:var(--t2)}
+.badge-discount{background:linear-gradient(90deg,rgba(249,115,22,.2),rgba(239,68,68,.2));
+  color:#fb923c;border:1px solid rgba(249,115,22,.3)}
+
+/* ── FLOW BAR ───────────────────────────────────────── */
+.flow-bar{display:flex;align-items:flex-start;overflow-x:auto;padding:8px 0;gap:0}
+.flow-step{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.flow-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:800;border:2px solid var(--bdr);
+  background:var(--bg3);color:var(--t3)}
+.flow-dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.flow-dot.active{background:var(--gold);border-color:var(--gold);color:#000}
+.flow-lbl{font-size:9px;color:var(--t3);margin-top:3px;white-space:nowrap}
+.flow-arr{color:var(--t3);font-size:12px;margin:0 3px;padding-bottom:14px;flex-shrink:0}
+
+/* ── PRODUCT LIST ───────────────────────────────────── */
+.prod-list{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden}
+.prod-row{display:grid;grid-template-columns:1fr 65px 55px 110px;gap:4px;
+  padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center}
+.prod-row.has-qty{background:rgba(245,158,11,.05)}
+.prod-row.has-disc{background:rgba(249,115,22,.06)}
+.prod-name{font-size:13px;font-weight:600;line-height:1.3}
+.prod-code{font-size:10px;color:var(--t3);font-family:monospace;margin-top:1px}
+.prod-avail{font-size:10px;font-weight:700;margin-top:2px}
+.avail-ok{color:var(--green)}.avail-no{color:var(--red)}
+.prod-price{text-align:right;font-size:13px;font-weight:700;color:var(--t2)}
+.price-orig{text-decoration:line-through;color:var(--t3);font-size:11px}
+.price-disc{color:var(--orange);font-size:13px;font-weight:800}
+.disc-wrap{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.disc-inp{width:46px;height:28px;text-align:center;background:rgba(249,115,22,.1);
+  border:1px solid rgba(249,115,22,.3);border-radius:6px;color:var(--orange);
+  font-size:12px;font-weight:700;-moz-appearance:textfield}
+.disc-inp::-webkit-inner-spin-button{display:none}
+.disc-k{font-size:10px;color:var(--t3)}
+.qty-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.stepper{display:flex;align-items:center;gap:3px}
+.step-btn{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;
+  justify-content:center;font-size:15px;font-weight:700;cursor:pointer;border:none}
+.step-btn:active{transform:scale(.85)}
+.step-btn.minus{background:rgba(255,255,255,.08);color:var(--t2)}
+.step-btn.plus{background:var(--gold);color:#000}
+.step-inp{width:36px;height:26px;text-align:center;background:rgba(255,255,255,.06);
+  border:1px solid var(--bdr);border-radius:6px;color:var(--text);
+  font-size:12px;font-weight:700;-moz-appearance:textfield}
+.step-inp::-webkit-inner-spin-button{display:none}
+.row-sub{font-size:11px;font-weight:800;color:var(--gold)}
+
+/* ── SUBTOTAL BAR ───────────────────────────────────── */
+.subtotal-bar{position:sticky;top:0;z-index:10;background:var(--bg2);
+  border:1px solid var(--bdr);border-radius:var(--r);
+  padding:9px 12px;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sb-meta{font-size:12px;font-weight:700;color:var(--t2)}
+.sb-label{font-size:10px;color:var(--t3)}
+.sb-total{font-size:22px;font-weight:900;color:var(--gold)}
+
+/* ── NOTICES ────────────────────────────────────────── */
+.notice{padding:9px 12px;border-radius:var(--rs);font-size:12px;line-height:1.5}
+.notice-gold{background:var(--gold-d);border:1px solid rgba(245,158,11,.3);color:var(--gold)}
+.notice-orange{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:#fb923c}
+.notice-blue{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);color:#a5b4fc}
+.notice-red{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#f87171}
+.notice-inline{display:inline-block;font-size:11px;color:var(--t2);font-style:italic}
+.disc-banner{background:linear-gradient(90deg,#c2410c,#ea580c);
+  padding:7px 12px;border-radius:var(--rs) var(--rs) 0 0;
+  font-size:12px;font-weight:700;color:#fff;margin:-14px -14px 10px -14px}
+
+/* ── ORDER CARD HELPERS ─────────────────────────────── */
+.order-id{font-family:monospace;font-size:13px;font-weight:800}
+.order-amt{text-align:right;flex-shrink:0}
+.amt-big{font-size:20px;font-weight:900}
+.amt-orig{font-size:11px;text-decoration:line-through;color:var(--t3)}
+
+/* ── MODAL ──────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;
+  display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.center{align-items:center}
+.modal{background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:var(--r) var(--r) 0 0;width:100%;max-width:520px;
+  max-height:92vh;overflow-y:auto;padding:18px 14px;
+  box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.overlay.center .modal{border-radius:var(--r);max-width:480px}
+.modal-title{font-size:15px;font-weight:800;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between}
+.modal-x{font-size:20px;color:var(--t3);cursor:pointer;line-height:1;padding:4px}
+.modal-x:hover{color:var(--text)}
+
+/* ── TABLE ──────────────────────────────────────────── */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:400px}
+th{padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--bdr);white-space:nowrap}
+td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px;vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.02)}
+.tl{text-align:left}.tr{text-align:right}
+.disc-th{color:var(--orange)}
+.disc-row{background:rgba(249,115,22,.05)}
+.totals-row{display:flex;justify-content:flex-end;align-items:center;gap:20px;
+  padding-top:10px;border-top:1px solid var(--bdr)}
+.total-final{font-size:20px;font-weight:900;color:var(--gold)}
+
+/* ── PAY GRID ───────────────────────────────────────── */
+.pay-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+
+/* ── TOAST ──────────────────────────────────────────── */
+#toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);
+  background:#1e293b;border:1px solid var(--bdr);border-radius:99px;
+  padding:9px 18px;font-size:13px;font-weight:600;z-index:9999;
+  opacity:0;transition:opacity .25s;pointer-events:none;
+  white-space:nowrap;max-width:88vw;text-align:center}
+.toast.show{opacity:1}
+.toast.success{border-color:var(--green);color:#34d399}
+.toast.error{border-color:var(--red);color:#f87171}
+.toast.info{border-color:var(--gold);color:var(--gold)}
+
+/* ── SPINNER ────────────────────────────────────────── */
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);
+  border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+.spin-lg{width:32px;height:32px;border-width:3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.center-spin{display:flex;align-items:center;justify-content:center;padding:50px}
+
+/* ── MISC HELPERS ───────────────────────────────────── */
+.row-between{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.row-gap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.page-title{font-size:18px;font-weight:900;margin-bottom:14px}
+.filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.filter-btn.factive{border-color:var(--gold);color:var(--gold)}
+.empty{text-align:center;color:var(--t3);padding:44px 0;font-size:13px}
+.err{color:var(--red);padding:20px;font-size:13px}
+.fw600{font-weight:600}.fw700{font-weight:700}.fw800{font-weight:800}.fw900{font-weight:900}
+.fs16{font-size:16px}
+.sub{font-size:12px;color:var(--t2);margin-top:2px}
+.mono{font-family:monospace;font-size:12px}
+.text-gold{color:var(--gold)}.text-green{color:var(--green)}.text-red{color:var(--red)}
+.text-orange{color:var(--orange)}.text-t3{color:var(--t3)}
+.py6{padding-top:6px;padding-bottom:6px}
+.py8{padding-top:8px;padding-bottom:8px}
+.border-b{border-bottom:1px solid var(--bdr)}
+.avatar-lg{width:52px;height:52px;border-radius:50%;background:var(--gold-d);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:900;color:var(--gold);flex-shrink:0}
+.notif-item{padding:10px;border-bottom:1px solid var(--bdr);cursor:pointer}
+.notif-item:hover{background:var(--card)}
+.notif-unread{border-left:3px solid var(--gold);padding-left:8px}
+.cname{font-size:15px;font-weight:800;margin-bottom:3px}
+.csub{font-size:12px;color:var(--t2);margin-top:2px}
+.stock-badge{text-align:right;flex-shrink:0}
+.stock-num{font-size:28px;font-weight:900}
+.stock-lbl{font-size:10px;color:var(--t3)}
+
+/* ── RESPONSIVE ─────────────────────────────────────── */
+@media(max-width:768px){
+  #sidebar{display:none}
+  #bottom-nav{display:flex}
+  #content{padding:10px 9px}
+  .form-row{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .prod-row{grid-template-columns:1fr 58px 100px}
+  .prod-row .disc-wrap{display:none}
+}
+@media(min-width:769px){
+  #bottom-nav{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ══════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div id="auth-wrap"></div>
+</div>
+
+<!-- ══ APP ══════════════════════════════════════════════════ -->
+<div id="app">
+  <!-- Topbar -->
+  <div id="topbar">
+    <div class="brand">
+      <div class="brand-box">DSM</div>
+      <div>
+        <div class="brand-name">DSM Mitumba</div>
+        <div class="brand-sub">Kigogo St · Kariakoo 🇹🇿</div>
+      </div>
+    </div>
+    <div id="topbar-right">
+      <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="btn-zh" onclick="setLang('zh')">中文</button>
+      <div id="notif-bell" onclick="showNotifications()">🔔
+        <span id="notif-dot"></span>
+      </div>
+      <div class="avatar" id="avatar" onclick="nav('profile')">?</div>
+      <div style="font-size:10px;color:var(--t3);display:none" id="user-id"></div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+    <div id="sidebar"><div id="sidebar-nav"></div></div>
+    <div id="content"></div>
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <div id="bottom-nav" style="width:100%"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+
+const SB_URL = 'https://yddtrpyrwxwnvmacdacu.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkZHRycHlyd3h3bnZtYWNkYWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NTc4MTcsImV4cCI6MjA4ODIzMzgxN30.dWKI603utJPeUWcnwDLlDph8VgmfeMGuqjjvL43WjoM';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzZ9x32w3ePqGqL8V9doQankTrLlEB0fT8Lszi5ehyKoVpBavCPgsIzKTNwuGy90Bn5/exec';
+
+// ═══ SUPABASE HELPERS ═══════════════════════════════════════
+async function sbFetch(method, path, body, params) {
+  let url = `${SB_URL}/rest/v1/${path}`;
+  if (params) url += '?' + params;
+  const h = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': method === 'POST' ? 'return=representation' : '',
+  };
+  const r = await fetch(url, { method, headers: h, body: body ? JSON.stringify(body) : undefined });
+  if (r.status === 204) return null;
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.message || d.hint || d.error || `HTTP ${r.status}`);
+  return d;
+}
+const GET    = (t,p,s) => sbFetch('GET',    t, null,   (p?p+'&':'')+'select='+(s||'*'));
+const POST   = (t,d)   => sbFetch('POST',   t, d);
+const PATCH  = (t,p,d) => sbFetch('PATCH',  t, d,      p);
+const DELETE = (t,p)   => sbFetch('DELETE', t, null,   p);
+
+// ═══ STATE ══════════════════════════════════════════════════
+const S = {
+  user: null, lang: 'en', page: null,
+  cart: {}, discounts: {}, cartContainerId: null,
+  editOrderId: null, notifCount: 0,
+  _products: [], _container: null, _stockMap: {},
+};
+
+// ═══ UTILS ══════════════════════════════════════════════════
+const now   = () => new Date().toISOString();
+const fmtK  = n => { n=Number(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?Math.round(n/1000)+'K':String(n); };
+const r1k   = n => Math.floor(Number(n||0)/1000)*1000;
+const $     = id => document.getElementById(id);
+const html  = (id,h) => { const e=$(id); if(e) e.innerHTML=h; };
+
+function toast(msg, type='info', ms=3000) {
+  const t = $('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  clearTimeout(t._t); t._t = setTimeout(() => t.className = 'toast', ms);
+}
+
+function modal(content, opts={}) {
+  document.querySelector('.overlay')?.remove();
+  const o = document.createElement('div');
+  o.className = 'overlay' + (opts.center ? ' center' : '');
+  o.innerHTML = `<div class="modal">${content}</div>`;
+  if (!opts.persist) o.onclick = e => { if (e.target === o) o.remove(); };
+  document.body.appendChild(o);
+  return o;
+}
+const closeModal = () => document.querySelector('.overlay')?.remove();
+
+async function nextOrderId() {
+  const rows = await GET('counter', 'key=eq.order_seq');
+  const seq = rows?.[0]?.value || 1;
+  await PATCH('counter', 'key=eq.order_seq', { value: seq + 1 });
+  const d = new Date();
+  return 'DSM' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + String(seq).padStart(3,'0');
+}
+
+async function nextUserId(role) {
+  const map = { super:'SUP', reviewer:'S', finance:'F', warehouse:'W', customer:'C' };
+  const pad = role === 'customer' ? 4 : 2;
+  const existing = await GET('users', `role=eq.${role}&deleted=eq.false`, 'id');
+  return (map[role]||'U') + String((existing?.length||0)+1).padStart(pad,'0');
+}
+
+// ═══ LANGUAGE ═══════════════════════════════════════════════
+const T = {
+  en: {
+    login:'Sign In', register:'Register', submit:'Submit',
+    containers:'Containers', myorders:'My Orders', profile:'Profile',
+    available:'Available', reserved:'Reserved', bales:'bales',
+    pay:'Payment Method', note:'Note', back:'Back',
+    cash:'Cash', mpesa:'M-Pesa', bank:'Bank Transfer', credit:'Credit',
+    submitted:'Submitted', sales_approved:'Sales Approved',
+    finance_confirmed:'Payment Confirmed', shipped:'Shipped',
+    completed:'Completed', sales_rejected:'Rejected', cancelled:'Cancelled',
+    discount:'Discount', order_total:'Order Total', approve:'Approve',
+    reject:'Reject', cancel:'Cancel', details:'Details',
+    no_data:'No data found', loading:'Loading...',
+  },
+  zh: {
+    login:'登录', register:'注册', submit:'提交',
+    containers:'货柜列表', myorders:'我的订单', profile:'我的',
+    available:'可发货', reserved:'已锁定', bales:'包',
+    pay:'支付方式', note:'备注', back:'返回',
+    cash:'现金', mpesa:'M-Pesa', bank:'银行转账', credit:'赊账',
+    submitted:'已提交', sales_approved:'销售已批',
+    finance_confirmed:'已收款', shipped:'已发货',
+    completed:'已完成', sales_rejected:'已拒绝', cancelled:'已取消',
+    discount:'折扣', order_total:'订单总额', approve:'通过',
+    reject:'拒绝', cancel:'取消', details:'详情',
+    no_data:'暂无数据', loading:'加载中...',
+  }
+};
+const t = k => T[S.lang][k] || k;
+const setLang = l => { S.lang=l; $('btn-en')?.classList.toggle('active',l==='en'); $('btn-zh')?.classList.toggle('active',l==='zh'); renderPage(); };
+
+// ═══ STATUS CONFIG ═══════════════════════════════════════════
+const SC = {
+  submitted:         { en:'Submitted',         zh:'已提交',   cls:'badge-yellow', icon:'⏳', step:1 },
+  sales_approved:    { en:'Sales Approved',    zh:'销售已批', cls:'badge-blue',   icon:'✓',  step:2 },
+  finance_confirmed: { en:'Payment Confirmed', zh:'已收款',   cls:'badge-purple', icon:'💰', step:3 },
+  shipped:           { en:'Shipped',           zh:'已发货',   cls:'badge-orange', icon:'📦', step:4 },
+  completed:         { en:'Completed',         zh:'已完成',   cls:'badge-green',  icon:'🎉', step:5 },
+  sales_rejected:    { en:'Rejected',          zh:'已拒绝',   cls:'badge-red',    icon:'✕',  step:0 },
+  cancelled:         { en:'Cancelled',         zh:'已取消',   cls:'badge-gray',   icon:'✕',  step:0 },
+};
+
+function badge(status) {
+  const c = SC[status] || { en:status, zh:status, cls:'badge-gray', icon:'·' };
+  return `<span class="badge ${c.cls}">${c.icon} ${S.lang==='zh'?c.zh:c.en}</span>`;
+}
+
+function flowBar(status) {
+  const steps = [
+    { en:'Submitted',  zh:'提交' },
+    { en:'Sales ✓',    zh:'销售批' },
+    { en:'Paid',       zh:'收款' },
+    { en:'Shipped',    zh:'发货' },
+    { en:'Done',       zh:'完成' },
+  ];
+  const cur = SC[status]?.step || 0;
+  return '<div class="flow-bar">' + steps.map((s,i) => {
+    const n = i+1, done = cur>n, active = cur===n;
+    return `<div class="flow-step">
+      <div class="flow-dot ${done?'done':active?'active':''}">${done?'✓':n}</div>
+      <div class="flow-lbl">${S.lang==='zh'?s.zh:s.en}</div>
+    </div>${i<4?'<div class="flow-arr">›</div>':''}`;
+  }).join('') + '</div>';
+}
+
+// ═══ AUTH SCREENS ════════════════════════════════════════════
+function showLogin() {
+  $('auth-wrap').innerHTML = `
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-box">DSM</div>
+        <div class="auth-title">DSM Mitumba Orders</div>
+        <div class="auth-sub">Kigogo St · Kariakoo · Dar es Salaam 🇹🇿</div>
+      </div>
+      <div class="form-g"><label class="lbl">📱 Phone</label>
+        <input class="inp" id="l-phone" type="tel" placeholder="255 700 000 000" inputmode="numeric"></div>
+      <div class="form-g"><label class="lbl">🔒 Password</label>
+        <input class="inp" id="l-pw" type="password" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-gold w100" onclick="doLogin()" id="btn-login">
+        ${t('login')} · Ingia →
+      </button>
+      <div class="auth-links">
+        <a onclick="showRegister()">New customer? Register</a>
+        <a onclick="showStaffReg()" style="color:var(--t3)">Staff registration</a>
+      </div>
+    </div>`;
+}
+
+function showRegister() {
+  $('auth-wrap').innerHTML = `
+    <div class="auth-card">
+      <div class="auth-title" style="margin-bottom:16px">📝 Customer Registration</div>
+      <div class="form-g"><label class="lbl">Full Name *</label>
+        <input class="inp" id="r-name" placeholder="Your full name"></div>
+      <div class="form-g"><label class="lbl">📱 Phone *</label>
+        <input class="inp" id="r-phone" type="tel" placeholder="255 700 000 000" inputmode="numeric"></div>
+      <div class="form-g"><label class="lbl">🔒 Password * (min 4 chars)</label>
+        <input class="inp" id="r-pw" type="password" placeholder="Set a password"></div>
+      <div class="form-g"><label class="lbl">📍 District / Area *</label>
+        <select class="inp" id="r-district">
+          <option value="">Select district...</option>
+          ${['Kariakoo','Kinondoni','Ilala','Temeke','Ubungo','Kigamboni','Mwanza','Arusha','Mbeya','Dodoma','Other'].map(d=>`<option>${d}</option>`).join('')}
+        </select></div>
+      <div class="form-g"><label class="lbl">🏠 Street Address</label>
+        <input class="inp" id="r-address" placeholder="Street name & number"></div>
+      <div class="form-g">
+        <label class="lbl">🔑 Verification Code
+          <a onclick="sendRegCode()" id="send-code-lnk" style="margin-left:8px;font-size:11px">→ Send to admin</a>
+        </label>
+        <input class="inp" id="r-code" placeholder="6-digit code" inputmode="numeric" maxlength="6"></div>
+      <button class="btn btn-gold w100" onclick="doRegister()">Create Account</button>
+      <div class="auth-links"><a onclick="showLogin()">← Back to login</a></div>
+    </div>`;
+}
+
+function showStaffReg() {
+  $('auth-wrap').innerHTML = `
+    <div class="auth-card">
+      <div class="auth-title" style="margin-bottom:6px">👤 Staff Registration</div>
+      <div class="notice notice-gold" style="margin-bottom:14px">Requires Super Admin approval before activation.</div>
+      <div class="form-g"><label class="lbl">Full Name *</label>
+        <input class="inp" id="s-name" placeholder="Your full name"></div>
+      <div class="form-g"><label class="lbl">📱 Phone *</label>
+        <input class="inp" id="s-phone" type="tel" placeholder="255 700 000 000"></div>
+      <div class="form-g"><label class="lbl">Role *</label>
+        <select class="inp" id="s-role">
+          <option value="reviewer">Sales / Reviewer (S##)</option>
+          <option value="finance">Finance (F##)</option>
+          <option value="warehouse">Warehouse (W##)</option>
+          <option value="super">Super Admin (SUP##)</option>
+        </select></div>
+      <div class="form-g"><label class="lbl">🔒 Password *</label>
+        <input class="inp" id="s-pw" type="password" placeholder="Min 4 characters"></div>
+      <div class="form-g">
+        <label class="lbl">🔑 Admin Verification Code
+          <a onclick="sendStaffCode()" style="margin-left:8px;font-size:11px">→ Send to admin email</a>
+        </label>
+        <input class="inp" id="s-code" placeholder="6-digit code" maxlength="6" inputmode="numeric"></div>
+      <button class="btn btn-gold w100" onclick="doStaffReg()">Submit for Approval</button>
+      <div class="auth-links"><a onclick="showLogin()">← Back to login</a></div>
+    </div>`;
+}
+
+// ─── Auth actions ─────────────────────────────────────────
+async function sendRegCode() {
+  const phone = $('r-phone')?.value?.trim();
+  if (!phone) return toast('Enter phone first', 'error');
+  $('send-code-lnk').textContent = 'Sending...';
+  try {
+    await fetch(`${GAS_URL}?action=sendCode&phone=${phone}`);
+    toast('Verification code sent to admin email ✓', 'success');
+    $('send-code-lnk').textContent = 'Resend →';
+  } catch { toast('Failed to send', 'error'); $('send-code-lnk').textContent = '→ Send to admin'; }
+}
+
+async function sendStaffCode() {
+  const phone = $('s-phone')?.value?.trim();
+  if (!phone) return toast('Enter phone first', 'error');
+  try {
+    await fetch(`${GAS_URL}?action=sendCode&phone=${phone}`);
+    toast('Code sent ✓', 'success');
+  } catch { toast('Failed to send', 'error'); }
+}
+
+async function doLogin() {
+  const phone = $('l-phone')?.value?.trim();
+  const pw    = $('l-pw')?.value?.trim();
+  if (!phone || !pw) return toast('Enter phone and password', 'error');
+  const btn = $('btn-login');
+  btn.innerHTML = '<span class="spin"></span>';
+  btn.disabled = true;
+  try {
+    const rows = await GET('users', `phone=eq.${phone}&deleted=eq.false`);
+    if (!rows?.length) throw new Error('Phone not registered');
+    const u = rows[0];
+    if (u.pw !== pw) throw new Error('Incorrect password');
+    if (u.disabled) throw new Error('Account disabled. Contact admin.');
+    if (u.status === 'pending') throw new Error('Account pending approval. Please wait.');
+    if (u.status === 'rejected') throw new Error('Account registration rejected.');
+    await PATCH('users', `id=eq.${u.id}`, { last_login: now() });
+    S.user = u;
+    $('auth-screen').style.display = 'none';
+    $('app').style.display = 'flex';
+    initApp();
+  } catch(e) {
+    toast(e.message, 'error', 4000);
+  } finally {
+    btn.innerHTML = `${t('login')} · Ingia →`;
+    btn.disabled = false;
+  }
+}
+
+async function doRegister() {
+  const name     = $('r-name')?.value?.trim();
+  const phone    = $('r-phone')?.value?.trim();
+  const pw       = $('r-pw')?.value?.trim();
+  const district = $('r-district')?.value;
+  const address  = $('r-address')?.value?.trim();
+  const code     = $('r-code')?.value?.trim();
+  if (!name||!phone||!pw||!district||!code) return toast('Fill all required fields (*)', 'error');
+  if (pw.length < 4) return toast('Password min 4 characters', 'error');
+  // Verify code via GAS
+  try {
+    const vr = await fetch(`${GAS_URL}?action=verifyCode&phone=${phone}&code=${code}`).then(r=>r.json()).catch(()=>({ok:false}));
+    if (!vr.ok) throw new Error(vr.error || 'Invalid or expired code');
+    const exists = await GET('users', `phone=eq.${phone}`, 'id');
+    if (exists?.length) throw new Error('Phone already registered');
+    const id = await nextUserId('customer');
+    await POST('users', { id, phone, name, pw, role:'customer', status:'pending', disabled:false, deleted:false, district, address: address||'', assigned_to:'', created_at:now() });
+    // Notify all sales
+    await pushNotif(null, 'reviewer', '🆕 New customer registration', `${name} · ${phone} · ${district}`, 'system');
+    toast('Account created! A salesperson will approve you soon.', 'success', 5000);
+    showLogin();
+  } catch(e) { toast(e.message, 'error', 4000); }
+}
+
+async function doStaffReg() {
+  const name  = $('s-name')?.value?.trim();
+  const phone = $('s-phone')?.value?.trim();
+  const role  = $('s-role')?.value;
+  const pw    = $('s-pw')?.value?.trim();
+  const code  = $('s-code')?.value?.trim();
+  if (!name||!phone||!pw||!code) return toast('Fill all fields', 'error');
+  if (pw.length < 4) return toast('Password min 4 characters', 'error');
+  try {
+    const vr = await fetch(`${GAS_URL}?action=verifyCode&phone=${phone}&code=${code}`).then(r=>r.json()).catch(()=>({ok:false}));
+    if (!vr.ok) throw new Error(vr.error || 'Invalid code');
+    const exists = await GET('users', `phone=eq.${phone}`, 'id');
+    if (exists?.length) throw new Error('Phone already registered');
+    const id = await nextUserId(role);
+    await POST('users', { id, phone, name, pw, role, status:'pending', disabled:false, deleted:false, created_at:now() });
+    await pushNotif(null, 'super', '🆕 Staff registration pending', `${name} · ${role} · ${phone}`, 'system');
+    toast('Submitted! Super admin will review and activate your account.', 'success', 5000);
+    showLogin();
+  } catch(e) { toast(e.message, 'error', 4000); }
+}
+
+// ═══ APP INIT ════════════════════════════════════════════════
+function initApp() {
+  const u = S.user;
+  $('avatar').textContent = (u.name||'?')[0].toUpperCase();
+  $('user-id').textContent = u.id;
+  loadNotifCount();
+  setInterval(loadNotifCount, 30000);
+  const def = { customer:'containers', reviewer:'review', finance:'finance', warehouse:'warehouse', super:'alladmin' };
+  nav(def[u.role] || 'profile');
+}
+
+async function loadNotifCount() {
+  try {
+    const rows = await GET('notifications', `read=eq.false&or=(to_user_id.eq.${S.user.id},to_role.eq.${S.user.role})`, 'id');
+    S.notifCount = rows?.length || 0;
+    $('notif-dot').style.display = S.notifCount > 0 ? 'flex' : 'none';
+    $('notif-dot').textContent = S.notifCount || '';
+    buildNav();
+  } catch{}
+}
+
+// ═══ NAVIGATION ══════════════════════════════════════════════
+const NAV_CFG = {
+  // customer
+  containers: { icon:'📦', en:'Containers',  zh:'货柜',    roles:['customer'] },
+  orders:     { icon:'📋', en:'My Orders',   zh:'我的订单', roles:['customer'] },
+  // reviewer/sales
+  review:     { icon:'✅', en:'Review',      zh:'审批',    roles:['reviewer'] },
+  rev_analytics:{ icon:'📊', en:'Analytics', zh:'分析',    roles:['reviewer'] },
+  // finance
+  finance:    { icon:'💰', en:'Payments',    zh:'收款',    roles:['finance']  },
+  fin_analytics:{ icon:'📊', en:'Analytics', zh:'分析',    roles:['finance']  },
+  // warehouse
+  warehouse:  { icon:'🏭', en:'Warehouse',   zh:'仓库',    roles:['warehouse']},
+  wh_analytics:{ icon:'📊',en:'Analytics',   zh:'分析',    roles:['warehouse']},
+  // super
+  alladmin:   { icon:'🗂️', en:'All Orders',  zh:'全部订单', roles:['super']   },
+  containers_mgmt:{ icon:'🚢', en:'Containers', zh:'货柜',  roles:['super']   },
+  users_mgmt: { icon:'👥', en:'Users',       zh:'用户',    roles:['super']    },
+  super_analytics:{ icon:'📊',en:'Analytics',zh:'分析',     roles:['super']   },
+  // shared
+  profile:    { icon:'👤', en:'Profile',     zh:'我的',    roles:['customer','reviewer','finance','warehouse','super'] },
+};
+
+function visibleNav() {
+  return Object.entries(NAV_CFG)
+    .filter(([,v]) => v.roles.includes(S.user?.role))
+    .map(([id,v]) => ({ id, icon:v.icon, label: S.lang==='zh'?v.zh:v.en }));
+}
+
+function buildNav() {
+  const items = visibleNav();
+  const nb = S.notifCount;
+  // Sidebar
+  $('sidebar-nav').innerHTML = items.map(item => `
+    <div class="nav-item ${S.page===item.id?'active':''}" onclick="nav('${item.id}')">
+      <span class="nav-icon">${item.icon}</span>
+      <span class="nav-lbl">${item.label}</span>
+      ${['review','finance','warehouse'].includes(item.id) && nb > 0
+        ? `<span class="nav-badge">${nb}</span>` : ''}
+    </div>`).join('');
+  // Bottom nav (mobile, max 5)
+  $('bottom-nav').innerHTML = items.slice(0,5).map(item => `
+    <div class="bnav ${S.page===item.id?'active':''}" onclick="nav('${item.id}')">
+      <span class="bicon">${item.icon}</span>
+      <span>${item.label}</span>
+    </div>`).join('');
+}
+
+function nav(page) {
+  S.page = page;
+  buildNav();
+  renderPage();
+}
+
+// ═══ PAGE ROUTER ═════════════════════════════════════════════
+function renderPage() {
+  const pages = {
+    containers:      pageContainers,
+    orders:          pageMyOrders,
+    profile:         pageProfile,
+    review:          pageReview,
+    rev_analytics:   pageAnalytics,
+    finance:         pageFinance,
+    fin_analytics:   pageAnalytics,
+    warehouse:       pageWarehouse,
+    wh_analytics:    pageAnalytics,
+    alladmin:        pageAllOrders,
+    containers_mgmt: pageContainersMgmt,
+    users_mgmt:      pageUsers,
+    super_analytics: pageAnalytics,
+  };
+  const fn = pages[S.page];
+  if (fn) fn();
+  else html('content', '<div class="empty">Page not found</div>');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE: CONTAINERS (Customer)
+// ═══════════════════════════════════════════════════════════════
+async function pageContainers() {
+  html('content', `
+    <div class="page-title">${S.lang==='zh'?'📦 货柜列表':'📦 Available Containers'}</div>
+    <div id="clist"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  try {
+    const containers = await GET('containers', 'status=eq.active', '*');
+    containers?.sort((a,b) => new Date(a.arrival_date||0) - new Date(b.arrival_date||0));
+    if (!containers?.length) { html('clist', `<div class="empty">${t('no_data')}</div>`); return; }
+    const stockRows = await GET('stock', undefined, 'container_id,available,reserved');
+    const sm = {};
+    (stockRows||[]).forEach(s => {
+      sm[s.container_id] = sm[s.container_id] || {a:0,r:0};
+      sm[s.container_id].a += s.available||0;
+      sm[s.container_id].r += s.reserved||0;
+    });
+    html('clist', containers.map(c => {
+      const st = sm[c.id] || {a:0,r:0};
+      const arr = c.arrival_date ? new Date(c.arrival_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'TBD';
+      return `
+      <div class="card card-container" style="border-left:4px solid ${c.color||'#f59e0b'}">
+        <div class="row-between">
+          <div style="flex:1;min-width:0">
+            <div class="row-gap" style="margin-bottom:6px">
+              ${c.is_new?'<span class="badge badge-yellow">🔥 NEW</span>':''}
+              <span class="badge badge-gray">🌍 ${c.origin||'—'}</span>
+            </div>
+            <div class="cname">${c.name}</div>
+            <div class="csub">📅 ${S.lang==='zh'?'预计到货':'Arrival'}: ${arr}</div>
+            ${c.note?`<div class="csub">📝 ${c.note}</div>`:''}
+          </div>
+          <div class="stock-badge">
+            <div class="stock-num" style="color:${c.color||'#f59e0b'}">${st.a}</div>
+            <div class="stock-lbl">${S.lang==='zh'?'可发货':'available'}</div>
+            <div class="stock-lbl">${st.r} ${S.lang==='zh'?'锁定':'locked'}</div>
+          </div>
+        </div>
+        <button class="btn btn-gold w100 mt10" onclick="openOrderForm('${c.id}')">
+          ${S.lang==='zh'?'查看并下单 →':'Browse & Order →'}
+        </button>
+      </div>`; }).join(''));
+  } catch(e) { html('clist', `<div class="err">${e.message}</div>`); }
+}
+
+// ═══ ORDER FORM ══════════════════════════════════════════════
+async function openOrderForm(containerId, editOrderId=null) {
+  S.cartContainerId = containerId;
+  S.editOrderId = editOrderId;
+  if (!editOrderId) { S.cart = {}; S.discounts = {}; }
+
+  html('content', `<div id="order-form"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  try {
+    const [cRows, products] = await Promise.all([
+      GET('containers', `id=eq.${containerId}`),
+      GET('products', `container_id=eq.${containerId}`, '*'),
+    ]);
+    const container = cRows?.[0];
+    if (!container) throw new Error('Container not found');
+    products?.sort((a,b) => a.sort_order - b.sort_order);
+
+    // Stock map
+    const pFilter = products?.map(p=>`product_id.eq.${p.id}`).join(',');
+    const stockRows = pFilter ? await GET('stock', `or=(${pFilter})`) : [];
+    const sm = {};
+    (stockRows||[]).forEach(s => sm[s.product_id] = s);
+
+    // Pre-fill cart if editing
+    if (editOrderId) {
+      const items = await GET('order_items', `order_id=eq.${editOrderId}`);
+      (items||[]).forEach(i => {
+        const p = products?.find(p => p.code === i.product_code);
+        if (p) {
+          S.cart[p.id] = i.qty;
+          if (i.discount_amt > 0) S.discounts[p.id] = Math.round(i.discount_amt/1000);
+        }
+      });
+    }
+
+    S._products = products || [];
+    S._container = container;
+    S._stockMap = sm;
+    renderOrderForm();
+  } catch(e) {
+    html('order-form', `<div class="err">${e.message}</div>`);
+  }
+}
+
+function calcCart() {
+  let bales=0, sub=0, disc=0;
+  S._products.forEach(p => {
+    const q = S.cart[p.id]||0;
+    if (!q) return;
+    const d = (S.discounts[p.id]||0)*1000;
+    const fp = Math.max(0, p.unit_price - d);
+    bales += q; sub += q*fp; disc += d*q;
+  });
+  return { bales, sub:r1k(sub), disc:r1k(disc) };
+}
+
+function renderOrderForm() {
+  const c = S._container;
+  const isReviewer = S.user?.role === 'reviewer';
+  const { bales, sub, disc } = calcCart();
+  const types = Object.values(S.cart).filter(v=>v>0).length;
+
+  $('order-form').innerHTML = `
+    <div class="row-gap mb12">
+      <button class="btn btn-dark btn-sm" onclick="nav('containers')">← ${t('back')}</button>
+      <div>
+        <div class="fw800">${c.name}</div>
+        <div class="sub">🌍 ${c.origin||''} · ${S.lang==='zh'?'选择商品下单':'Select items'}</div>
+      </div>
+    </div>
+
+    <!-- Sticky subtotal bar -->
+    <div class="subtotal-bar" id="subtotal-bar">
+      <div>
+        <div class="sb-meta" id="sb-meta">${types} ${S.lang==='zh'?'种':'types'} · ${bales} ${t('bales')}</div>
+        <div class="sb-label">TZS</div>
+      </div>
+      <div class="sb-total" id="sb-total">${fmtK(sub)}</div>
+    </div>
+
+    ${isReviewer ? `
+    <div class="row-gap mb10" id="disc-toggle-row">
+      <button class="btn btn-sm" id="disc-mode-btn"
+        onclick="toggleDiscMode()"
+        style="background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.3)">
+        🏷 ${S.lang==='zh'?'折扣模式':'Discount Mode'}
+      </button>
+      ${Object.keys(S.discounts).length>0 ? '<span class="badge badge-discount">Discounts applied</span>' : ''}
+    </div>` : ''}
+
+    <!-- Product list -->
+    <div class="prod-list" id="prod-list">
+      ${S._products.map(p => renderProductRow(p, isReviewer)).join('')}
+    </div>
+
+    <!-- Submit section -->
+    <div class="card mt12" id="submit-sec">
+      <div class="row-between mb12">
+        <div>
+          <div class="sub">${t('order_total')}</div>
+          <div class="total-big" id="total-big">${fmtK(sub)} TZS</div>
+          ${disc>0 ? `<div class="disc-info" id="disc-info">🏷 ${S.lang==='zh'?'折扣':'Discount'}: -${fmtK(disc)} TZS</div>` : '<div id="disc-info"></div>'}
+          <div class="sub" style="font-size:10px">${S.lang==='zh'?'取整1000':'Rounded ↓ to nearest 1K'}</div>
+        </div>
+      </div>
+      <div class="form-g">
+        <label class="lbl">${t('pay')} *</label>
+        <div class="pay-grid" id="pay-grid">
+          ${['Cash','M-Pesa','Bank Transfer','Credit'].map(m=>`
+            <button class="btn btn-dark pay-btn" id="pay-${m.replace(/ /g,'')}"
+              onclick="pickPay('${m}')">
+              ${m==='Cash'?'💵':m==='M-Pesa'?'📱':m==='Bank Transfer'?'🏦':'💳'} ${m}
+            </button>`).join('')}
+        </div>
+      </div>
+      <div id="credit-wrap" style="display:none" class="form-g">
+        <label class="lbl">Credit Due Date</label>
+        <input class="inp" type="date" id="credit-due">
+      </div>
+      <div class="form-g">
+        <label class="lbl">${t('note')} (${S.lang==='zh'?'选填':'optional'})</label>
+        <textarea class="inp" id="order-note" rows="2" placeholder="${S.lang==='zh'?'给审核员的备注...':'Note for reviewer...'}" style="resize:none"></textarea>
+      </div>
+      <button class="btn btn-gold w100 btn-lg" onclick="doSubmitOrder()" id="submit-btn">
+        ${S.editOrderId ? '💾 Update Order' : `📋 ${S.lang==='zh'?'确认并提交':'Review & Submit →'}`}
+      </button>
+    </div>`;
+
+  // Re-attach selected pay if editing
+  if (window._selPay) pickPay(window._selPay);
+}
+
+function renderProductRow(p, isReviewer) {
+  const s   = S._stockMap[p.id] || {available:0};
+  const q   = S.cart[p.id] || 0;
+  const d   = S.discounts[p.id] || 0;
+  const fp  = Math.max(0, p.unit_price - d*1000);
+  const sub = r1k(fp*q);
+  const avail = s.available || 0;
+  const hasQ = q > 0, hasD = d > 0;
+
+  return `
+  <div class="prod-row ${hasQ?'has-qty':''} ${hasD?'has-disc':''}" id="pr-${p.id}">
+    <div class="prod-info">
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-code">${p.code}</div>
+      <div class="prod-avail ${avail>0?'avail-ok':'avail-no'}">
+        ${t('available')}: ${avail}
+      </div>
+    </div>
+    <div class="prod-price">
+      ${hasD
+        ? `<div class="price-orig">${Math.round(p.unit_price/1000)}K</div>
+           <div class="price-disc">${Math.round(fp/1000)}K</div>`
+        : `<div>${Math.round(p.unit_price/1000)}K</div>`}
+    </div>
+    ${isReviewer ? `
+    <div class="disc-wrap">
+      <input class="disc-inp" type="number" min="0" placeholder="0"
+        title="Discount per bale (K)" value="${d||''}"
+        onchange="setDisc('${p.id}',this.value,${p.unit_price})">
+      <span class="disc-k">K</span>
+    </div>` : `<div></div>`}
+    <div class="qty-wrap">
+      <div class="stepper">
+        <button class="step-btn minus" onclick="setQty('${p.id}',${q-1},${avail})">−</button>
+        <input class="step-inp" type="number" min="0" max="${avail}"
+          value="${q||''}" placeholder="0"
+          onchange="setQty('${p.id}',parseInt(this.value)||0,${avail})">
+        <button class="step-btn plus" onclick="setQty('${p.id}',${q+1},${avail})">+</button>
+      </div>
+      ${hasQ ? `<div class="row-sub">${fmtK(sub)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function setQty(pid, qty, max) {
+  qty = Math.max(0, Math.min(isNaN(qty)?0:qty, max));
+  S.cart[pid] = qty;
+  renderOrderForm();
+}
+
+function setDisc(pid, val, unitPrice) {
+  const d = Math.max(0, parseFloat(val)||0);
+  if (d===0) delete S.discounts[pid];
+  else S.discounts[pid] = d;
+  renderOrderForm();
+}
+
+let _discModeOn = false;
+function toggleDiscMode() {
+  _discModeOn = !_discModeOn;
+  const btn = $('disc-mode-btn');
+  if (btn) {
+    btn.style.background = _discModeOn ? 'var(--orange)' : 'rgba(249,115,22,.15)';
+    btn.style.color = _discModeOn ? '#000' : 'var(--orange)';
+  }
+}
+
+window._selPay = '';
+function pickPay(m) {
+  window._selPay = m;
+  document.querySelectorAll('.pay-btn').forEach(el => el.style.borderColor = '');
+  const el = $('pay-'+m.replace(/ /g,''));
+  if (el) el.style.cssText += ';border:2px solid var(--gold);color:var(--gold)';
+  $('credit-wrap').style.display = m==='Credit' ? 'block' : 'none';
+}
+
+async function doSubmitOrder() {
+  if (!window._selPay) return toast(S.lang==='zh'?'请选择支付方式':'Select payment method', 'error');
+  const items = [];
+  let bales=0, sub=0, disc=0, hasDisc=false;
+
+  S._products.forEach(p => {
+    const q = S.cart[p.id]||0;
+    if (!q) return;
+    const d   = (S.discounts[p.id]||0)*1000;
+    const fp  = Math.max(0, p.unit_price - d);
+    const s   = r1k(fp*q);
+    bales += q; sub += s; disc += d*q;
+    if (d>0) hasDisc = true;
+    items.push({ product_id:p.id, product_code:p.code, product_name:p.name, unit_price:p.unit_price, discount_amt:d, final_price:fp, qty:q, subtotal:s });
+  });
+
+  if (!items.length) return toast(S.lang==='zh'?'请选择商品':'Select at least one item', 'error');
+  sub = r1k(sub); disc = r1k(disc);
+
+  // Discount confirm dialog
+  if (hasDisc) {
+    const ok = await confirmDialog(
+      `🏷 ${S.lang==='zh'?'确认折扣订单':'Confirm Discount Order'}`,
+      `<div class="notice notice-orange">
+        <strong>${S.lang==='zh'?'此订单含折扣价格！':'This order contains discounted prices!'}</strong><br>
+        ${S.lang==='zh'?'折扣合计':'Total discount'}: <strong>${fmtK(disc)} TZS</strong><br>
+        ${S.lang==='zh'?'最终金额':'Final total'}: <strong>${fmtK(sub)} TZS</strong><br>
+        <br>${S.lang==='zh'?'财务人员也会看到折扣提示。':'Finance will also see the discount warning.'}
+      </div>`
+    );
+    if (!ok) return;
+  }
+
+  const btn = $('submit-btn');
+  btn.innerHTML = '<span class="spin"></span> Submitting...';
+  btn.disabled = true;
+
+  try {
+    const u = S.user;
+    const sales = u.role==='reviewer' ? u.id : (u.assigned_to || '');
+
+    if (S.editOrderId) {
+      await PATCH('orders', `id=eq.${S.editOrderId}`, {
+        pay_method:window._selPay, subtotal:sub, discount_total:disc,
+        total:sub, has_discount:hasDisc, note:$('order-note')?.value||''
+      });
+      await DELETE('order_items', `order_id=eq.${S.editOrderId}`);
+      for (const i of items) await POST('order_items', {...i, order_id:S.editOrderId});
+      toast('Order updated!', 'success');
+    } else {
+      const oid = await nextOrderId();
+      const creditDue = window._selPay==='Credit' ? $('credit-due')?.value||null : null;
+      await POST('orders', {
+        id:oid, container_id:S._container.id, container_name:S._container.name,
+        customer_id:u.id, customer_name:u.name, customer_phone:u.phone,
+        assigned_sales:sales, status:'submitted', pay_method:window._selPay,
+        pay_method_actual:'', subtotal:sub, discount_total:disc, total:sub,
+        has_discount:hasDisc, credit_due_date:creditDue||null,
+        credit_paid:false, note:$('order-note')?.value||'',
+        submitted_at:now()
+      });
+      for (const i of items) await POST('order_items', {...i, order_id:oid});
+      await pushNotif(sales, 'reviewer',
+        `🆕 ${S.lang==='zh'?'新订单':'New order'} ${oid}`,
+        `${u.name} · ${fmtK(sub)} TZS${hasDisc?' 🏷 DISCOUNT':''}`,
+        'order', oid);
+      toast(`✓ Order ${oid} submitted!`, 'success', 4000);
+    }
+    S.cart={}; S.discounts={}; S.editOrderId=null; window._selPay='';
+    nav('orders');
+  } catch(e) {
+    toast(e.message, 'error', 4000);
+    btn.innerHTML = `📋 ${S.lang==='zh'?'确认并提交':'Review & Submit →'}`;
+    btn.disabled = false;
+  }
+}
+
+// ═══ MY ORDERS PAGE ══════════════════════════════════════════
+async function pageMyOrders() {
+  html('content', `
+    <div class="page-title">${S.lang==='zh'?'📋 我的订单':'📋 My Orders'}</div>
+    <div class="filter-row" id="orders-filters">
+      ${['all','submitted','sales_approved','finance_confirmed','shipped','completed','cancelled'].map((s,i) =>
+        `<button class="btn btn-dark btn-sm filter-btn ${i===0?'factive':''}" id="of-${s}" onclick="filterMyOrders('${s}')">${
+          s==='all'?(S.lang==='zh'?'全部':'All'):badge(s)
+        }</button>`).join('')}
+    </div>
+    <div id="orders-list"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  await loadMyOrders('all');
+}
+
+async function filterMyOrders(status) {
+  document.querySelectorAll('.filter-btn').forEach(el => el.classList.remove('factive'));
+  $('of-'+status)?.classList.add('factive');
+  await loadMyOrders(status);
+}
+
+async function loadMyOrders(status) {
+  const u = S.user;
+  try {
+    let filter = `customer_id=eq.${u.id}`;
+    if (status !== 'all') filter += `&status=eq.${status}`;
+    // 3-month rule for completed orders
+    if (status === 'all' || status === 'completed') {
+      const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth()-3);
+      filter += `&or=(status.neq.completed,completed_at.gte.${cutoff.toISOString()})`;
+    }
+    const orders = await GET('orders', filter, '*');
+    orders?.sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+    const el = $('orders-list');
+    if (!orders?.length) { el.innerHTML = `<div class="empty">${t('no_data')}</div>`; return; }
+    el.innerHTML = orders.map(o => orderCard(o, 'customer')).join('');
+  } catch(e) { html('orders-list', `<div class="err">${e.message}</div>`); }
+}
+
+function orderCard(o, role) {
+  const canEdit   = o.status==='submitted' && role==='customer';
+  const canCancel = o.status==='submitted' && (role==='customer'||role==='super');
+  const isDisc    = o.has_discount;
+  const credit_overdue = o.pay_method==='Credit' && !o.credit_paid &&
+    o.credit_due_date && new Date(o.credit_due_date) < new Date();
+
+  return `
+  <div class="card ${credit_overdue?'card-overdue':''}" style="${isDisc?'border-color:var(--orange)':''}">
+    ${isDisc ? `<div class="disc-banner">🏷 DISCOUNT ORDER · -${fmtK(r1k(o.discount_total||0))} TZS · Finance: verify carefully!</div>` : ''}
+    <div class="row-between mb8">
+      <div style="flex:1;min-width:0">
+        <div class="row-gap mb4">
+          <span class="order-id">${o.id}</span>
+          ${badge(o.status)}
+          ${isDisc ? '<span class="badge badge-discount">🏷 Disc</span>' : ''}
+          ${credit_overdue ? '<span class="badge badge-red">⚠️ Credit Overdue</span>' : ''}
+        </div>
+        <div class="sub">${o.container_name||''}</div>
+        <div class="sub">${
+          o.pay_method==='Cash'?'💵':o.pay_method==='M-Pesa'?'📱':o.pay_method==='Bank Transfer'?'🏦':'💳'
+        } ${o.pay_method_actual||o.pay_method}${
+          o.pay_method_actual&&o.pay_method_actual!==o.pay_method
+            ? ` <span style="color:var(--t3);font-size:10px">(orig:${o.pay_method})</span>` : ''
+        } · ${new Date(o.submitted_at).toLocaleDateString()}</div>
+        ${o.credit_due_date ? `<div class="sub ${credit_overdue?'text-red':''}">📅 Due: ${new Date(o.credit_due_date).toLocaleDateString()}</div>` : ''}
+      </div>
+      <div class="order-amt">
+        <div class="amt-big ${isDisc?'text-orange':''}">${fmtK(o.total||0)}</div>
+        ${o.discount_total>0 ? `<div class="amt-orig">${fmtK(o.subtotal||0)}</div>` : ''}
+        <div class="sub">TZS</div>
+      </div>
+    </div>
+    ${flowBar(o.status)}
+    ${o.reject_reason ? `<div class="notice notice-red mt8">❌ ${S.lang==='zh'?'拒绝原因':'Reason'}: ${o.reject_reason}</div>` : ''}
+    <div class="row-gap mt10">
+      <button class="btn btn-dark btn-sm" onclick="showOrderDetail('${o.id}')">▼ ${t('details')}</button>
+      ${canEdit   ? `<button class="btn btn-sm" style="background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.3)" onclick="editOrder('${o.id}','${o.container_id}')">✏️ Edit</button>` : ''}
+      ${canCancel ? `<button class="btn btn-sm btn-red-soft" onclick="doCancelOrder('${o.id}')">✕ ${t('cancel')}</button>` : ''}
+      ${role==='super' && ['completed','shipped'].includes(o.status) ? `<button class="btn btn-dark btn-sm" onclick="superUndoCancel('${o.id}')">↩ Undo</button>` : ''}
+    </div>
+  </div>`;
+}
+
+async function showOrderDetail(oid) {
+  try {
+    const [oRows, items] = await Promise.all([
+      GET('orders', `id=eq.${oid}`),
+      GET('order_items', `order_id=eq.${oid}`)
+    ]);
+    const o = oRows?.[0]; if (!o) return;
+    items?.sort((a,b) => a.id-b.id);
+    modal(`
+      <div class="modal-title">📋 ${o.id}
+        <span class="modal-x" onclick="closeModal()">×</span>
+      </div>
+      ${flowBar(o.status)}
+      <div class="table-wrap mt10">
+        <table>
+          <thead><tr>
+            <th>Item</th><th>Code</th>
+            <th class="tr">Unit K</th>
+            ${o.has_discount ? '<th class="tr disc-th">Disc K</th><th class="tr disc-th">Final K</th>' : ''}
+            <th class="tr">Qty</th>
+            <th class="tr">Sub</th>
+          </tr></thead>
+          <tbody>
+            ${(items||[]).map(i => `
+              <tr ${o.has_discount&&i.discount_amt>0?'class="disc-row"':''}>
+                <td>${i.product_name}</td>
+                <td class="mono">${i.product_code}</td>
+                <td class="tr">${Math.round(i.unit_price/1000)}K</td>
+                ${o.has_discount ? `
+                  <td class="tr ${i.discount_amt>0?'text-orange':''}">${i.discount_amt>0?Math.round(i.discount_amt/1000)+'K':'—'}</td>
+                  <td class="tr ${i.discount_amt>0?'text-orange':''}">${Math.round(i.final_price/1000)}K</td>` : ''}
+                <td class="tr fw700">${i.qty}</td>
+                <td class="tr fw700 text-gold">${fmtK(i.subtotal)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="totals-row mt10">
+        ${o.has_discount ? `<div class="text-orange">🏷 ${S.lang==='zh'?'折扣':'Discount'}: -${fmtK(r1k(o.discount_total))} TZS</div>` : ''}
+        <div class="total-final">${fmtK(o.total)} TZS</div>
+      </div>`);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function editOrder(oid, cid) {
+  S.editOrderId = oid; window._selPay='';
+  await openOrderForm(cid, oid);
+}
+
+async function doCancelOrder(oid) {
+  if (!confirm(S.lang==='zh'?'确认取消此订单？':'Cancel this order?')) return;
+  try {
+    await PATCH('orders', `id=eq.${oid}`, { status:'cancelled', cancelled_at:now(), cancelled_by:S.user.id });
+    toast(S.lang==='zh'?'订单已取消':'Order cancelled','info');
+    nav('orders');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ═══ PROFILE PAGE ════════════════════════════════════════════
+async function pageProfile() {
+  const u = S.user;
+  html('content', `
+    <div class="page-title">${S.lang==='zh'?'👤 我的资料':'👤 Profile'}</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+        <div class="avatar-lg">${(u.name||'?')[0].toUpperCase()}</div>
+        <div>
+          <div class="fw800 fs16">${u.name}</div>
+          <div class="sub">${u.id} · ${u.role}</div>
+          <div class="sub">📱 ${u.phone}</div>
+          ${u.district ? `<div class="sub">📍 ${u.district}${u.address?', '+u.address:''}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-dark" onclick="openChangePw()">🔒 ${S.lang==='zh'?'修改密码':'Change Password'}</button>
+        <button class="btn btn-dark" onclick="openChangeAddress()">📍 ${S.lang==='zh'?'更新地址':'Update Address'}</button>
+        <button class="btn btn-dark btn-sm" style="color:var(--red)" onclick="doLogout()">← ${S.lang==='zh'?'退出登录':'Sign Out'}</button>
+      </div>
+    </div>`);
+}
+
+function openChangePw() {
+  modal(`
+    <div class="modal-title">🔒 ${S.lang==='zh'?'修改密码':'Change Password'}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div class="form-g"><label class="lbl">Current Password</label>
+      <input class="inp" id="cp-old" type="password" placeholder="Current password"></div>
+    <div class="form-g"><label class="lbl">New Password</label>
+      <input class="inp" id="cp-new" type="password" placeholder="New password (min 4 chars)"></div>
+    <button class="btn btn-gold w100" onclick="doChangePw()">Save</button>`,true);
+}
+
+async function doChangePw() {
+  const oldPw = $('cp-old')?.value?.trim();
+  const newPw = $('cp-new')?.value?.trim();
+  if (!oldPw||!newPw) return toast('Fill both fields','error');
+  if (newPw.length<4) return toast('Min 4 characters','error');
+  if (S.user.pw !== oldPw) return toast('Current password incorrect','error');
+  try {
+    await PATCH('users', `id=eq.${S.user.id}`, { pw:newPw });
+    S.user.pw = newPw;
+    closeModal(); toast('Password updated ✓','success');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function openChangeAddress() {
+  const u = S.user;
+  modal(`
+    <div class="modal-title">📍 ${S.lang==='zh'?'更新地址':'Update Address'}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div class="form-g"><label class="lbl">District</label>
+      <select class="inp" id="ua-dist">
+        ${['Kariakoo','Kinondoni','Ilala','Temeke','Ubungo','Kigamboni','Mwanza','Arusha','Mbeya','Dodoma','Other'].map(d=>`<option ${u.district===d?'selected':''}>${d}</option>`).join('')}
+      </select></div>
+    <div class="form-g"><label class="lbl">Street Address</label>
+      <input class="inp" id="ua-addr" value="${u.address||''}" placeholder="Street name & number"></div>
+    <button class="btn btn-gold w100" onclick="doUpdateAddress()">Save</button>`,true);
+}
+
+async function doUpdateAddress() {
+  const dist = $('ua-dist')?.value;
+  const addr = $('ua-addr')?.value?.trim();
+  if (!dist) return toast('Select district','error');
+  try {
+    await PATCH('users',`id=eq.${S.user.id}`,{district:dist,address:addr||''});
+    S.user.district = dist; S.user.address = addr||'';
+    closeModal(); toast('Address updated ✓','success');
+    nav('profile');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function doLogout() {
+  S.user=null; S.cart={}; S.discounts={};
+  $('app').style.display='none';
+  $('auth-screen').style.display='flex';
+  showLogin();
+}
+
+// ═══ NOTIFICATIONS ═══════════════════════════════════════════
+async function pushNotif(userId, role, title, body, type='order', orderId='') {
+  try {
+    await POST('notifications', {
+      to_user_id: userId||null, to_role: role||null,
+      title, body, type, read:false,
+      order_id: orderId||null, created_at:now()
+    });
+  } catch{}
+}
+
+async function showNotifications() {
+  try {
+    const rows = await GET('notifications',
+      `or=(to_user_id.eq.${S.user.id},to_role.eq.${S.user.role})`,
+      '*');
+    rows?.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    modal(`
+      <div class="modal-title">🔔 ${S.lang==='zh'?'通知':'Notifications'}
+        <span class="modal-x" onclick="closeModal()">×</span></div>
+      ${rows?.length ? rows.slice(0,30).map(n=>`
+        <div class="notif-item ${n.read?'':'notif-unread'}" onclick="markRead('${n.id}','${n.order_id||''}')">
+          <div class="fw600">${n.title}</div>
+          <div class="sub">${n.body||''}</div>
+          <div class="sub" style="font-size:10px">${new Date(n.created_at).toLocaleString()}</div>
+        </div>`).join('')
+      : `<div class="empty">${S.lang==='zh'?'暂无通知':'No notifications'}</div>`}
+      <button class="btn btn-dark w100 mt12" onclick="markAllRead()">
+        ${S.lang==='zh'?'全部标为已读':'Mark all read'}
+      </button>`);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function markRead(id, orderId) {
+  try {
+    await PATCH('notifications',`id=eq.${id}`,{read:true});
+    if (orderId) { closeModal(); /* could nav to order */ }
+    loadNotifCount();
+  } catch{}
+}
+
+async function markAllRead() {
+  try {
+    await PATCH('notifications',
+      `or=(to_user_id.eq.${S.user.id},to_role.eq.${S.user.role})`,
+      {read:true});
+    closeModal(); loadNotifCount(); toast('All marked read','success');
+  } catch{}
+}
+
+// ═══ CONFIRM DIALOG HELPER ═══════════════════════════════════
+function confirmDialog(title, body) {
+  return new Promise(resolve => {
+    modal(`
+      <div class="modal-title">${title}
+        <span class="modal-x" onclick="closeModal()">×</span></div>
+      ${body}
+      <div class="row-gap mt14">
+        <button class="btn btn-gold w100" onclick="closeModal();window._cdRes(true)">✓ Confirm</button>
+        <button class="btn btn-dark w100" onclick="closeModal();window._cdRes(false)">Cancel</button>
+      </div>`,true);
+    window._cdRes = resolve;
+  });
+}
+
+</script>
+<script>
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: REVIEW (Sales/Reviewer)
+// ═══════════════════════════════════════════════════════════
+async function pageReview() {
+  html('content', `
+    <div class="page-title">✅ ${S.lang==='zh'?'审批订单':'Review Orders'} · <span class="text-t3">${S.user.id}</span></div>
+    <div class="filter-row">
+      ${['submitted','sales_approved','sales_rejected','all'].map((s,i)=>`
+        <button class="btn btn-dark btn-sm filter-btn ${i===0?'factive':''}" id="rf-${s}"
+          onclick="loadReviewOrders('${s}')">
+          ${s==='all'?(S.lang==='zh'?'全部':'All'):s==='submitted'?(S.lang==='zh'?'待审批':'Pending')
+            :s==='sales_approved'?(S.lang==='zh'?'已批':'Approved'):(S.lang==='zh'?'已拒':'Rejected')}
+        </button>`).join('')}
+    </div>
+
+    <!-- Customer registration approvals -->
+    <div id="cust-approvals"></div>
+
+    <div id="review-list"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+
+  await loadCustApprovals();
+  await loadReviewOrders('submitted');
+}
+
+async function loadCustApprovals() {
+  try {
+    const pending = await GET('users', `status=eq.pending&role=eq.customer`, 'id,name,phone,district,created_at');
+    if (!pending?.length) { html('cust-approvals',''); return; }
+    html('cust-approvals', `
+      <div class="card mb12" style="border-color:var(--gold)">
+        <div class="card-title">👤 ${S.lang==='zh'?'待审批客户注册':'Pending Customer Approvals'} (${pending.length})</div>
+        ${pending.map(u=>`
+          <div class="row-between py8 border-b">
+            <div>
+              <div class="fw700">${u.name}</div>
+              <div class="sub">${u.phone} · ${u.district||''}</div>
+              <div class="sub" style="font-size:10px">${new Date(u.created_at).toLocaleDateString()}</div>
+            </div>
+            <div class="row-gap">
+              <button class="btn btn-green btn-sm" onclick="approveCust('${u.id}')">✓ ${t('approve')}</button>
+              <button class="btn btn-red-soft btn-sm" onclick="rejectCust('${u.id}')">✕</button>
+            </div>
+          </div>`).join('')}
+      </div>`);
+  } catch{}
+}
+
+async function approveCust(uid) {
+  try {
+    await PATCH('users', `id=eq.${uid}`, { status:'active', approved_by:S.user.id, approved_at:now(), assigned_to:S.user.id });
+    await pushNotif(uid,'','✅ Account approved!','You can now log in and place orders.','system');
+    toast('Customer approved!','success');
+    loadCustApprovals();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function rejectCust(uid) {
+  const reason = prompt(S.lang==='zh'?'拒绝原因（可留空）':'Rejection reason (optional):')||'';
+  try {
+    await PATCH('users',`id=eq.${uid}`,{status:'rejected'});
+    await pushNotif(uid,'','❌ Registration rejected',reason||'Contact admin for details.','system');
+    toast('Customer rejected','info');
+    loadCustApprovals();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function loadReviewOrders(status) {
+  document.querySelectorAll('[id^="rf-"]').forEach(el=>el.classList.remove('factive'));
+  $('rf-'+status)?.classList.add('factive');
+  try {
+    let filter = `assigned_sales=eq.${S.user.id}`;
+    if (status!=='all') filter += `&status=eq.${status}`;
+    const orders = await GET('orders', filter, '*');
+    orders?.sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+    const el = $('review-list');
+    if (!orders?.length) { el.innerHTML=`<div class="empty">${t('no_data')}</div>`; return; }
+    el.innerHTML = orders.map(o=>reviewCard(o)).join('');
+  } catch(e) { html('review-list',`<div class="err">${e.message}</div>`); }
+}
+
+function reviewCard(o) {
+  const isDisc = o.has_discount;
+  return `
+  <div class="card ${isDisc?'card-disc':''} mb10">
+    ${isDisc?`<div class="disc-banner">🏷 DISCOUNT ORDER · Finance will be notified to verify</div>`:''}
+    <div class="row-between mb8">
+      <div style="flex:1;min-width:0">
+        <div class="row-gap mb4">
+          <span class="order-id">${o.id}</span>
+          ${badge(o.status)}
+          ${isDisc?'<span class="badge badge-discount">🏷 Disc</span>':''}
+        </div>
+        <div class="fw600">${o.customer_name}</div>
+        <div class="sub">${o.customer_phone} · ${o.container_name}</div>
+        <div class="sub">${new Date(o.submitted_at).toLocaleDateString()}
+          · ${o.pay_method==='Cash'?'💵':o.pay_method==='M-Pesa'?'📱':o.pay_method==='Bank Transfer'?'🏦':'💳'} ${o.pay_method}</div>
+        ${o.note?`<div class="sub notice-inline">📝 ${o.note}</div>`:''}
+      </div>
+      <div class="order-amt">
+        <div class="amt-big ${isDisc?'text-orange':''}">${fmtK(o.total)}</div>
+        <div class="sub">TZS</div>
+      </div>
+    </div>
+    ${flowBar(o.status)}
+    ${o.reject_reason?`<div class="notice notice-red mt6">❌ ${o.reject_reason}</div>`:''}
+    <div class="row-gap mt10">
+      <button class="btn btn-dark btn-sm" onclick="showOrderDetail('${o.id}')">▼ ${t('details')}</button>
+      ${o.status==='submitted' ? `
+        <button class="btn btn-green btn-sm" onclick="doSalesApprove('${o.id}')">✓ ${t('approve')}</button>
+        <button class="btn btn-sm" style="background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.3)"
+          onclick="openDiscModal('${o.id}')">🏷 Disc+Approve</button>
+        <button class="btn btn-red-soft btn-sm" onclick="openRejectModal('${o.id}')">✕ ${t('reject')}</button>
+      ` : ''}
+      ${o.status==='sales_approved' ? `
+        <button class="btn btn-dark btn-sm" onclick="undoSalesApprove('${o.id}')">↩ Undo</button>
+      ` : ''}
+    </div>
+  </div>`;
+}
+
+async function doSalesApprove(oid) {
+  try {
+    const order = (await GET('orders',`id=eq.${oid}`))?.[0];
+    if(!order) throw new Error('Order not found');
+    // Lock stock
+    const items = await GET('order_items',`order_id=eq.${oid}`);
+    for (const i of (items||[])) {
+      const s = (await GET('stock',`product_id=eq.${i.product_id}`))?.[0];
+      if (!s) continue;
+      if ((s.available||0) < i.qty) throw new Error(`⚠️ Insufficient stock: ${i.product_name} (need ${i.qty}, have ${s.available||0})`);
+      await PATCH('stock',`product_id=eq.${i.product_id}`,{
+        available: (s.available||0)-i.qty,
+        reserved:  (s.reserved||0)+i.qty,
+        updated_at:now()
+      });
+    }
+    await PATCH('orders',`id=eq.${oid}`,{
+      status:'sales_approved', sales_approved_by:S.user.id, sales_approved_at:now()
+    });
+    await pushNotif(null,'finance',
+      `💰 ${order.has_discount?'🏷 DISCOUNT ':''}Order ready for payment`,
+      `${oid} · ${order.customer_name} · ${fmtK(order.total)} TZS${order.has_discount?' · VERIFY DISCOUNT':''}`,
+      'payment', oid);
+    toast('✓ Approved! Stock locked. Finance notified.','success');
+    loadReviewOrders('submitted');
+  } catch(e) { toast(e.message,'error',4000); }
+}
+
+function openRejectModal(oid) {
+  modal(`
+    <div class="modal-title">✕ ${S.lang==='zh'?'拒绝订单':'Reject Order'}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div class="form-g">
+      <label class="lbl">${S.lang==='zh'?'拒绝原因':'Reason'} *</label>
+      <textarea class="inp" id="rej-reason" rows="3"
+        placeholder="${S.lang==='zh'?'告知客户拒绝原因...':'Explain to customer...'}"></textarea>
+    </div>
+    <div class="row-gap">
+      <button class="btn btn-red w100" onclick="doSalesReject('${oid}')">Confirm Reject</button>
+      <button class="btn btn-dark w100" onclick="closeModal()">Cancel</button>
+    </div>`,true);
+}
+
+async function doSalesReject(oid) {
+  const reason = $('rej-reason')?.value?.trim();
+  if (!reason) return toast('Enter rejection reason','error');
+  try {
+    await PATCH('orders',`id=eq.${oid}`,{
+      status:'sales_rejected', reject_reason:reason,
+      sales_approved_by:S.user.id, sales_approved_at:now()
+    });
+    const order = (await GET('orders',`id=eq.${oid}`))?.[0];
+    await pushNotif(order?.customer_id,'','❌ Order rejected',`${oid}: ${reason}`,'order',oid);
+    closeModal();
+    toast('Order rejected','info');
+    loadReviewOrders('submitted');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function openDiscModal(oid) {
+  const items = await GET('order_items',`order_id=eq.${oid}`,'*');
+  items?.sort((a,b)=>a.id-b.id);
+  modal(`
+    <div class="modal-title">🏷 ${S.lang==='zh'?'添加折扣并审批':'Discount + Approve'}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div class="notice notice-orange mb12">
+      ${S.lang==='zh'
+        ?'对每个品种输入每包折扣金额（K）。0表示不打折。提交后财务会收到折扣提示。'
+        :'Enter discount per bale (K) per item. Leave 0 for no discount. Finance will see discount warning.'}
+    </div>
+    <div style="max-height:45vh;overflow-y:auto">
+      ${(items||[]).map(i=>`
+        <div class="row-between py8 border-b">
+          <div style="flex:1">
+            <div class="fw600">${i.product_name}</div>
+            <div class="sub">${Math.round(i.unit_price/1000)}K/bale · qty ${i.qty}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span class="sub">−</span>
+            <input class="disc-inp" type="number" min="0" id="di-${i.id}"
+              placeholder="0" value="${i.discount_amt>0?Math.round(i.discount_amt/1000):''}">
+            <span class="sub">K</span>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="row-gap mt14">
+      <button class="btn btn-orange w100" onclick="applyDiscAndApprove('${oid}','${(items||[]).map(i=>i.id).join(',')}')">
+        🏷 Apply Discount & Approve
+      </button>
+      <button class="btn btn-dark" onclick="closeModal()">Cancel</button>
+    </div>`,false);
+}
+
+async function applyDiscAndApprove(oid, itemIdsStr) {
+  const itemIds = itemIdsStr.split(',');
+  try {
+    const order = (await GET('orders',`id=eq.${oid}`))?.[0];
+    const items = await GET('order_items',`order_id=eq.${oid}`);
+    let newTotal=0, newDisc=0;
+
+    for (const i of (items||[])) {
+      const discK  = parseFloat($('di-'+i.id)?.value)||0;
+      const discTzs = Math.round(discK*1000);
+      const fp      = Math.max(0, i.unit_price - discTzs);
+      const sub     = r1k(fp*i.qty);
+      newTotal += sub; newDisc += discTzs*i.qty;
+      await PATCH('order_items',`id=eq.${i.id}`,{discount_amt:discTzs,final_price:fp,subtotal:sub});
+    }
+
+    const hasDisc = newDisc>0;
+    newTotal = r1k(newTotal); newDisc = r1k(newDisc);
+
+    // Lock stock
+    for (const i of (items||[])) {
+      const s = (await GET('stock',`product_id=eq.${i.product_id}`))?.[0];
+      if (!s) continue;
+      if ((s.available||0) < i.qty) throw new Error(`Insufficient stock: ${i.product_name}`);
+      await PATCH('stock',`product_id=eq.${i.product_id}`,{
+        available:(s.available||0)-i.qty, reserved:(s.reserved||0)+i.qty, updated_at:now()
+      });
+    }
+
+    await PATCH('orders',`id=eq.${oid}`,{
+      status:'sales_approved', has_discount:hasDisc,
+      discount_total:newDisc, total:newTotal,
+      sales_approved_by:S.user.id, sales_approved_at:now(), sales_modified:true
+    });
+
+    await pushNotif(null,'finance',
+      `💰${hasDisc?'🏷 DISCOUNT':''} Order approved`,
+      `${oid} · ${fmtK(newTotal)} TZS${hasDisc?' · ⚠️ DISCOUNTED PRICES — VERIFY CAREFULLY':''}`,
+      'payment', oid);
+
+    closeModal();
+    toast('✓ Discount applied & order approved!','success');
+    loadReviewOrders('submitted');
+  } catch(e) { toast(e.message,'error',4000); }
+}
+
+async function undoSalesApprove(oid) {
+  if (!confirm(S.lang==='zh'?'撤销审批？将释放锁定库存':'Undo approval? Reserved stock will be released.')) return;
+  try {
+    const items = await GET('order_items',`order_id=eq.${oid}`);
+    for (const i of (items||[])) {
+      const s = (await GET('stock',`product_id=eq.${i.product_id}`))?.[0];
+      if (!s) continue;
+      await PATCH('stock',`product_id=eq.${i.product_id}`,{
+        available:(s.available||0)+i.qty, reserved:Math.max(0,(s.reserved||0)-i.qty), updated_at:now()
+      });
+    }
+    await PATCH('orders',`id=eq.${oid}`,{status:'submitted',sales_approved_by:'',sales_approved_at:null});
+    toast('Approval undone. Stock released.','info');
+    loadReviewOrders('sales_approved');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: FINANCE
+// ═══════════════════════════════════════════════════════════
+async function pageFinance() {
+  html('content', `
+    <div class="page-title">💰 ${S.lang==='zh'?'收款管理':'Payments'} · <span class="text-t3">${S.user.id}</span></div>
+    <div id="fin-summary"><div class="center-spin"><span class="spin-lg"></span></div></div>
+    <div class="filter-row mt12">
+      ${['sales_approved','all_active','credit_overdue'].map((s,i)=>`
+        <button class="btn btn-dark btn-sm filter-btn ${i===0?'factive':''}" id="ff-${s}"
+          onclick="loadFinanceOrders('${s}')">
+          ${s==='sales_approved'?(S.lang==='zh'?'待收款':'Pending')
+            :s==='all_active'?(S.lang==='zh'?'全部':'All Active')
+            :(S.lang==='zh'?'赊账逾期':'Credit Overdue')}
+        </button>`).join('')}
+    </div>
+    <div id="fin-list"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  await loadFinSummary();
+  await loadFinanceOrders('sales_approved');
+}
+
+async function loadFinSummary() {
+  try {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todayOrders = await GET('orders',
+      `status=eq.finance_confirmed&finance_confirmed_at=gte.${today.toISOString()}`, '*');
+    const byMethod = {};
+    (todayOrders||[]).forEach(o => {
+      const m = o.pay_method_actual||o.pay_method;
+      byMethod[m] = (byMethod[m]||0)+(o.total||0);
+    });
+    const creditPending = await GET('orders',
+      `pay_method=eq.Credit&credit_paid=eq.false&status=not.in.(cancelled,sales_rejected)`, 'id,total,customer_name,credit_due_date');
+    const overdue = (creditPending||[]).filter(o=>o.credit_due_date&&new Date(o.credit_due_date)<new Date());
+
+    html('fin-summary', `
+      <div class="stat-grid">
+        ${Object.entries(byMethod).map(([m,v])=>`
+          <div class="stat-card">
+            <div class="stat-lbl">${m==='Cash'?'💵':m==='M-Pesa'?'📱':m==='Bank Transfer'?'🏦':'💳'} Today · ${m}</div>
+            <div class="stat-val">${fmtK(v)}</div>
+            <div class="stat-sub">TZS collected</div>
+          </div>`).join('')}
+        ${!Object.keys(byMethod).length?`
+          <div class="stat-card">
+            <div class="stat-lbl">Today's Collections</div>
+            <div class="stat-val">0</div>
+            <div class="stat-sub">No payments yet today</div>
+          </div>`:''}
+        <div class="stat-card ${overdue.length>0?'stat-warn':''}">
+          <div class="stat-lbl">💳 Credit Pending</div>
+          <div class="stat-val ${overdue.length>0?'text-orange':''}">${creditPending?.length||0}</div>
+          <div class="stat-sub">${fmtK((creditPending||[]).reduce((s,o)=>s+(o.total||0),0))} TZS total
+            ${overdue.length>0?`· ⚠️ ${overdue.length} overdue`:''}</div>
+        </div>
+      </div>`);
+  } catch{}
+}
+
+async function loadFinanceOrders(status) {
+  document.querySelectorAll('[id^="ff-"]').forEach(el=>el.classList.remove('factive'));
+  $('ff-'+status)?.classList.add('factive');
+  try {
+    let filter = '';
+    if (status==='sales_approved') filter='status=eq.sales_approved';
+    else if (status==='credit_overdue') {
+      const today = new Date().toISOString().slice(0,10);
+      filter=`pay_method=eq.Credit&credit_paid=eq.false&credit_due_date=lt.${today}&status=not.in.(cancelled,sales_rejected)`;
+    } else filter='status=in.(sales_approved,finance_confirmed)';
+    const orders = await GET('orders',filter,'*');
+    orders?.sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+    const el=$('fin-list');
+    if(!orders?.length){el.innerHTML=`<div class="empty">${t('no_data')}</div>`;return;}
+    el.innerHTML=orders.map(o=>financeCard(o)).join('');
+  } catch(e){html('fin-list',`<div class="err">${e.message}</div>`);}
+}
+
+function financeCard(o) {
+  const isDisc=o.has_discount;
+  const creditOverdue=o.pay_method==='Credit'&&!o.credit_paid&&o.credit_due_date&&new Date(o.credit_due_date)<new Date();
+  return `
+  <div class="card ${isDisc?'card-disc':''} ${creditOverdue?'card-overdue':''} mb10">
+    ${isDisc?`<div class="disc-banner">🏷 DISCOUNT ORDER — ⚠️ Verify amounts carefully before confirming!</div>`:''}
+    <div class="row-between mb8">
+      <div style="flex:1;min-width:0">
+        <div class="row-gap mb4">
+          <span class="order-id">${o.id}</span>
+          ${badge(o.status)}
+          ${isDisc?'<span class="badge badge-discount">🏷 Disc</span>':''}
+          ${creditOverdue?'<span class="badge badge-red">⚠️ Overdue</span>':''}
+        </div>
+        <div class="fw600">${o.customer_name} · ${o.customer_phone}</div>
+        <div class="sub">${o.container_name} · ${new Date(o.submitted_at).toLocaleDateString()}</div>
+        <div class="sub">${o.pay_method==='Cash'?'💵':o.pay_method==='M-Pesa'?'📱':o.pay_method==='Bank Transfer'?'🏦':'💳'}
+          Requested: ${o.pay_method}</div>
+        ${o.credit_due_date?`<div class="sub ${creditOverdue?'text-red':''}">📅 Due: ${new Date(o.credit_due_date).toLocaleDateString()}</div>`:''}
+      </div>
+      <div class="order-amt">
+        <div class="amt-big ${isDisc?'text-orange':''}">${fmtK(o.total)}</div>
+        ${o.discount_total>0?`<div class="text-orange" style="font-size:11px">-${fmtK(o.discount_total)} disc</div>`:''}
+        <div class="sub">TZS</div>
+      </div>
+    </div>
+    <div class="row-gap">
+      <button class="btn btn-dark btn-sm" onclick="showOrderDetail('${o.id}')">▼ ${t('details')}</button>
+      ${o.status==='sales_approved'?`<button class="btn btn-green btn-sm" onclick="openFinConfirm('${o.id}')">💰 Confirm Payment</button>`:''}
+      ${o.status==='finance_confirmed'&&o.pay_method==='Credit'&&!o.credit_paid?`<button class="btn btn-gold btn-sm" onclick="markCreditPaid('${o.id}')">✓ Mark Credit Paid</button>`:''}
+    </div>
+  </div>`;
+}
+
+function openFinConfirm(oid) {
+  modal(`
+    <div class="modal-title">💰 Confirm Payment
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div class="form-g">
+      <label class="lbl">Actual Payment Method</label>
+      <select class="inp" id="fcp-method" onchange="toggleCreditDue()">
+        <option value="Cash">💵 Cash</option>
+        <option value="M-Pesa">📱 M-Pesa</option>
+        <option value="Bank Transfer">🏦 Bank Transfer</option>
+        <option value="Credit">💳 Credit</option>
+      </select>
+    </div>
+    <div id="fcp-credit-wrap" style="display:none" class="form-g">
+      <label class="lbl">Credit Due Date</label>
+      <input class="inp" type="date" id="fcp-due">
+    </div>
+    <div class="notice notice-blue mb12">
+      ${S.lang==='zh'
+        ?'确认收款后，仓库将收到发货通知。可修改实际支付方式。'
+        :'After confirmation, warehouse will be notified to ship. You can correct the payment method here.'}
+    </div>
+    <button class="btn btn-green w100" onclick="doFinConfirm('${oid}')">
+      ✓ Confirm & Notify Warehouse
+    </button>`,true);
+}
+
+function toggleCreditDue() {
+  const m = $('fcp-method')?.value;
+  $('fcp-credit-wrap').style.display = m==='Credit'?'block':'none';
+}
+
+async function doFinConfirm(oid) {
+  const method = $('fcp-method')?.value||'Cash';
+  const due    = method==='Credit'?$('fcp-due')?.value||null:null;
+  try {
+    const order = (await GET('orders',`id=eq.${oid}`))?.[0];
+    await PATCH('orders',`id=eq.${oid}`,{
+      status:'finance_confirmed',
+      pay_method_actual:method,
+      credit_due_date:due||order?.credit_due_date||null,
+      finance_confirmed_by:S.user.id,
+      finance_confirmed_at:now()
+    });
+    await pushNotif(null,'warehouse',
+      `📦 Ready to ship`,
+      `${oid} · ${order?.customer_name} · ${fmtK(order?.total)} TZS`,
+      'order', oid);
+    closeModal();
+    toast('✓ Payment confirmed! Warehouse notified.','success');
+    loadFinSummary(); loadFinanceOrders('sales_approved');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function markCreditPaid(oid) {
+  try {
+    await PATCH('orders',`id=eq.${oid}`,{credit_paid:true,credit_paid_at:now()});
+    toast('Credit marked as paid ✓','success');
+    loadFinanceOrders('all_active');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: WAREHOUSE
+// ═══════════════════════════════════════════════════════════
+async function pageWarehouse() {
+  html('content', `
+    <div class="page-title">🏭 ${S.lang==='zh'?'仓库管理':'Warehouse'} · <span class="text-t3">${S.user.id}</span></div>
+    <div class="filter-row">
+      <button class="btn btn-dark btn-sm filter-btn factive" onclick="whTab('ship')">📦 ${S.lang==='zh'?'待发货':'To Ship'}</button>
+      <button class="btn btn-dark btn-sm filter-btn" onclick="whTab('done')">✅ ${S.lang==='zh'?'已完成':'Done'}</button>
+      <button class="btn btn-dark btn-sm filter-btn" onclick="whTab('inbound')">🚢 ${S.lang==='zh'?'入库':'Inbound'}</button>
+      <button class="btn btn-dark btn-sm filter-btn" onclick="whTab('stock')">📊 ${S.lang==='zh'?'库存':'Stock'}</button>
+      <button class="btn btn-dark btn-sm filter-btn" onclick="whTab('stocktake')">📋 ${S.lang==='zh'?'盘点':'Stocktake'}</button>
+    </div>
+    <div id="wh-content"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  await whTab('ship');
+}
+
+async function whTab(tab) {
+  document.querySelectorAll('.filter-btn').forEach(el=>el.classList.remove('factive'));
+  event?.target?.classList.add('factive');
+  const el=$('wh-content');
+  el.innerHTML=`<div class="center-spin"><span class="spin-lg"></span></div>`;
+  try {
+    if (tab==='ship') await whShip(el);
+    else if (tab==='done') await whDone(el);
+    else if (tab==='inbound') await whInbound(el);
+    else if (tab==='stock') await whStock(el);
+    else if (tab==='stocktake') await whStocktake(el);
+  } catch(e){el.innerHTML=`<div class="err">${e.message}</div>`;}
+}
+
+async function whShip(el) {
+  const orders = await GET('orders','status=eq.finance_confirmed','*');
+  orders?.sort((a,b)=>new Date(a.finance_confirmed_at)-new Date(b.finance_confirmed_at));
+  if (!orders?.length){el.innerHTML=`<div class="empty">${S.lang==='zh'?'暂无待发货订单':'No orders to ship'}</div>`;return;}
+  el.innerHTML=orders.map(o=>`
+    <div class="card mb10">
+      <div class="row-between mb8">
+        <div>
+          <div class="row-gap mb4">
+            <span class="order-id">${o.id}</span>
+            ${badge(o.status)}
+          </div>
+          <div class="fw600">${o.customer_name}</div>
+          <div class="sub">${o.customer_phone}</div>
+          <div class="sub">${o.container_name}</div>
+          <div class="sub">${o.pay_method_actual||o.pay_method}</div>
+        </div>
+        <div class="order-amt">
+          <div class="amt-big">${fmtK(o.total)}</div>
+          <div class="sub">TZS</div>
+        </div>
+      </div>
+      <div class="row-gap">
+        <button class="btn btn-dark btn-sm" onclick="showOrderDetail('${o.id}')">▼ Details</button>
+        <button class="btn btn-gold btn-sm" onclick="doShip('${o.id}')">📦 Ship Now</button>
+      </div>
+    </div>`).join('');
+}
+
+async function doShip(oid) {
+  if(!confirm(S.lang==='zh'?'确认发货？':'Confirm shipment?')) return;
+  try {
+    const order=(await GET('orders',`id=eq.${oid}`))?.[0];
+    const items=await GET('order_items',`order_id=eq.${oid}`);
+    for (const i of (items||[])) {
+      const s=(await GET('stock',`product_id=eq.${i.product_id}`))?.[0];
+      if(!s) continue;
+      await PATCH('stock',`product_id=eq.${i.product_id}`,{
+        qty:Math.max(0,(s.qty||0)-i.qty),
+        reserved:Math.max(0,(s.reserved||0)-i.qty),
+        updated_at:now()
+      });
+    }
+    await PATCH('orders',`id=eq.${oid}`,{status:'shipped',shipped_by:S.user.id,shipped_at:now()});
+    await pushNotif(order?.customer_id,'','📦 Your order has been shipped!',`${oid} is on its way`,'order',oid);
+    toast('✓ Order shipped!','success');
+    whTab('ship');
+  } catch(e){toast(e.message,'error');}
+}
+
+async function whDone(el) {
+  const orders=await GET('orders','status=in.(shipped,completed)','*');
+  orders?.sort((a,b)=>new Date(b.shipped_at)-new Date(a.shipped_at));
+  if(!orders?.length){el.innerHTML=`<div class="empty">${t('no_data')}</div>`;return;}
+  el.innerHTML=orders.map(o=>{
+    const canUndo = S.user.role==='super'||(o.status!=='completed')||(new Date(o.completed_at)>new Date(Date.now()-3*86400000));
+    return `
+    <div class="card mb8">
+      <div class="row-between">
+        <div>
+          <span class="order-id">${o.id}</span>
+          <div class="sub">${o.customer_name} · ${new Date(o.shipped_at||o.submitted_at).toLocaleDateString()}</div>
+        </div>
+        <div class="row-gap">
+          ${badge(o.status)}
+          ${o.status==='shipped'?`<button class="btn btn-green btn-sm" onclick="doComplete('${o.id}')">✓ Complete</button>`:''}
+          ${canUndo?`<button class="btn btn-dark btn-sm" onclick="undoShipment('${o.id}')">↩ Undo</button>`:''}
+        </div>
+      </div>
+    </div>`; }).join('');
+}
+
+async function doComplete(oid) {
+  try {
+    await PATCH('orders',`id=eq.${oid}`,{status:'completed',completed_at:now()});
+    toast('✓ Order completed!','success'); whTab('done');
+  } catch(e){toast(e.message,'error');}
+}
+
+async function undoShipment(oid) {
+  const order=(await GET('orders',`id=eq.${oid}`))?.[0];
+  if(!order) return;
+  const threeDaysAgo=new Date(Date.now()-3*86400000);
+  if(S.user.role!=='super'&&new Date(order.completed_at||order.shipped_at)<threeDaysAgo)
+    return toast('Only super admin can undo orders older than 3 days','error');
+  if(!confirm('Undo shipment? Stock will be restored.')) return;
+  try {
+    const items=await GET('order_items',`order_id=eq.${oid}`);
+    for(const i of (items||[])){
+      const s=(await GET('stock',`product_id=eq.${i.product_id}`))?.[0];
+      if(!s) continue;
+      await PATCH('stock',`product_id=eq.${i.product_id}`,{
+        qty:(s.qty||0)+i.qty, reserved:(s.reserved||0)+i.qty, updated_at:now()
+      });
+    }
+    await PATCH('orders',`id=eq.${oid}`,{status:'finance_confirmed',shipped_by:'',shipped_at:null,completed_at:null});
+    toast('Shipment undone. Stock restored.','info'); whTab('done');
+  } catch(e){toast(e.message,'error');}
+}
+
+async function whInbound(el) {
+  const receipts=await GET('receipts','status=in.(pending,anomaly)','*');
+  receipts?.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  el.innerHTML=`
+    ${(receipts||[]).length?receipts.map(r=>`
+      <div class="card mb10 ${r.anomaly?'card-disc':''}">
+        <div class="row-between">
+          <div>
+            <div class="row-gap mb4">
+              <span class="fw800 mono">${r.id}</span>
+              <span class="badge ${r.anomaly?'badge-red':'badge-yellow'}">${r.anomaly?'⚠️ Anomaly':'⏳ Pending'}</span>
+            </div>
+            <div class="sub">${r.container_id} · ${new Date(r.created_at).toLocaleDateString()}</div>
+            ${r.anomaly_note?`<div class="sub text-red">${r.anomaly_note}</div>`:''}
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="openReceiptConfirm('${r.id}')">
+            ${r.anomaly?'View Anomaly':'Count & Confirm →'}
+          </button>
+        </div>
+      </div>`).join('') : `<div class="empty">${S.lang==='zh'?'暂无待入库货物':'No pending inbound receipts'}</div>`}`;
+}
+
+async function openReceiptConfirm(rid) {
+  const receipt=(await GET('receipts',`id=eq.${rid}`))?.[0];
+  if(!receipt) return;
+  const products=await GET('products',`container_id=eq.${receipt.container_id}`,'*');
+  products?.sort((a,b)=>a.sort_order-b.sort_order);
+  modal(`
+    <div class="modal-title">📥 Confirm Inbound: ${rid}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div class="sub mb10">${receipt.container_id}</div>
+    <div style="max-height:40vh;overflow-y:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th class="tl py6 border-b">Product</th>
+          <th class="tr py6 border-b">Actual Count</th>
+        </tr></thead>
+        <tbody>
+          ${(products||[]).map(p=>`
+            <tr>
+              <td class="py6 border-b">
+                <div class="fw600">${p.name}</div>
+                <div class="sub">${p.code}</div>
+              </td>
+              <td class="tr py6 border-b">
+                <input class="step-inp" type="number" min="0" id="rc-${p.id}" value="0" style="width:60px">
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-g mt10">
+      <label class="lbl">⚠️ Any anomaly? (leave blank if all OK)</label>
+      <input class="inp" id="rc-anomaly" placeholder="Note issues here...">
+    </div>
+    <div class="row-gap mt10">
+      <button class="btn btn-green w100" onclick="doConfirmReceipt('${rid}','${(products||[]).map(p=>p.id).join(',')}','${receipt.container_id}')">
+        ✓ Confirm Receipt
+      </button>
+      <button class="btn btn-dark" onclick="closeModal()">Cancel</button>
+    </div>`,false);
+}
+
+async function doConfirmReceipt(rid, pidStr, containerId) {
+  const pids=pidStr.split(',');
+  const anomalyNote=$('rc-anomaly')?.value?.trim()||'';
+  const hasAnomaly=!!anomalyNote;
+  try {
+    for(const pid of pids){
+      const qty=parseInt($('rc-'+pid)?.value)||0;
+      if(qty<=0) continue;
+      const s=(await GET('stock',`product_id=eq.${pid}`))?.[0];
+      if(s){
+        await PATCH('stock',`product_id=eq.${pid}`,{
+          qty:(s.qty||0)+qty, available:(s.available||0)+qty, updated_at:now()
+        });
+      } else {
+        await POST('stock',{product_id:pid,container_id:containerId,qty,available:qty,reserved:0,updated_at:now()});
+      }
+    }
+    await PATCH('receipts',`id=eq.${rid}`,{
+      status:hasAnomaly?'anomaly':'confirmed',
+      confirmed_by:S.user.id, confirmed_at:now(),
+      anomaly:hasAnomaly, anomaly_note:anomalyNote
+    });
+    // Activate container
+    await PATCH('containers',`id=eq.${containerId}`,{status:'active'});
+    if(hasAnomaly) await pushNotif(null,'super','⚠️ Inbound anomaly flagged',`Receipt ${rid}: ${anomalyNote}`,'system');
+    closeModal();
+    toast(hasAnomaly?'Anomaly flagged to super admin. Stock updated.':'✓ Inbound confirmed! Stock updated.', hasAnomaly?'info':'success');
+    whTab('inbound');
+  } catch(e){toast(e.message,'error');}
+}
+
+async function whStock(el) {
+  const stock=await GET('stock',undefined,'*');
+  const products=await GET('products',undefined,'id,name,code,container_id,unit_price');
+  const containers=await GET('containers',undefined,'id,name');
+  const pm={}; (products||[]).forEach(p=>pm[p.id]=p);
+  const cm={}; (containers||[]).forEach(c=>cm[c.id]=c.name);
+  el.innerHTML=`
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>${S.lang==='zh'?'货柜':'Container'}</th>
+          <th>${S.lang==='zh'?'商品':'Product'}</th>
+          <th>Code</th>
+          <th class="tr">${S.lang==='zh'?'总量':'Total'}</th>
+          <th class="tr">${S.lang==='zh'?'可发货':'Avail'}</th>
+          <th class="tr">${S.lang==='zh'?'已锁':'Reserved'}</th>
+        </tr></thead>
+        <tbody>
+          ${(stock||[]).map(s=>{
+            const p=pm[s.product_id]||{};
+            return `<tr>
+              <td class="sub">${cm[s.container_id]||s.container_id}</td>
+              <td class="fw600">${p.name||s.product_id}</td>
+              <td class="mono sub">${p.code||''}</td>
+              <td class="tr fw700">${s.qty||0}</td>
+              <td class="tr fw700 ${(s.available||0)>0?'text-green':'text-red'}">${s.available||0}</td>
+              <td class="tr text-orange">${s.reserved||0}</td>
+            </tr>`; }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function whStocktake(el) {
+  const containers=await GET('containers','status=eq.active','id,name');
+  const history=await GET('stocktake',undefined,'*');
+  history?.sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+  el.innerHTML=`
+    <div class="card mb12">
+      <div class="card-title">📋 ${S.lang==='zh'?'新建盘点':'New Stocktake'}</div>
+      <div class="form-g">
+        <label class="lbl">${S.lang==='zh'?'选择货柜':'Select Container'}</label>
+        <select class="inp" id="st-cid" onchange="loadStocktakeItems()">
+          <option value="">Choose...</option>
+          ${(containers||[]).map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div id="st-items"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">${S.lang==='zh'?'盘点历史':'Stocktake History'}</div>
+      ${history?.length ? history.slice(0,20).map(s=>`
+        <div class="row-between py8 border-b">
+          <div>
+            <div class="fw600">${s.product_name}</div>
+            <div class="sub">${S.lang==='zh'?'系统':'System'}: ${s.system_qty} · ${S.lang==='zh'?'实盘':'Counted'}: ${s.counted_qty}
+              · <span class="${s.diff<0?'text-red':s.diff>0?'text-orange':'text-t3'}">${s.diff>0?'+':''}${s.diff}</span></div>
+            <div class="sub" style="font-size:10px">${new Date(s.submitted_at).toLocaleDateString()} · by ${s.submitted_by}</div>
+          </div>
+          <span class="badge ${s.status==='approved'?'badge-green':s.status==='rejected'?'badge-red':'badge-yellow'}">${s.status}</span>
+        </div>`).join('') : `<div class="sub">${t('no_data')}</div>`}
+    </div>`;
+}
+
+async function loadStocktakeItems() {
+  const cid=$('st-cid')?.value; if(!cid) return;
+  const products=await GET('products',`container_id=eq.${cid}`,'*');
+  const stock=await GET('stock',`container_id=eq.${cid}`);
+  const sm={}; (stock||[]).forEach(s=>sm[s.product_id]=s);
+  products?.sort((a,b)=>a.sort_order-b.sort_order);
+  $('st-items').innerHTML=`
+    <div class="table-wrap mt10">
+      <table>
+        <thead><tr>
+          <th>${S.lang==='zh'?'商品':'Product'}</th>
+          <th class="tr">${S.lang==='zh'?'系统':'System'}</th>
+          <th class="tr">${S.lang==='zh'?'实盘':'Counted'}</th>
+          <th class="tr">${S.lang==='zh'?'差异':'Diff'}</th>
+        </tr></thead>
+        <tbody>
+          ${(products||[]).map(p=>{
+            const sys=sm[p.id]?.qty||0;
+            return `<tr>
+              <td><div class="fw600">${p.name}</div><div class="mono sub">${p.code}</div></td>
+              <td class="tr fw700">${sys}</td>
+              <td class="tr">
+                <input type="number" class="step-inp" id="sti-${p.id}" value="${sys}" min="0"
+                  style="width:60px" onchange="updateStDiff('${p.id}',${sys})">
+              </td>
+              <td class="tr" id="std-${p.id}">0</td>
+            </tr>`; }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-g mt10">
+      <label class="lbl">${S.lang==='zh'?'盘点备注':'Note'}</label>
+      <input class="inp" id="st-note" placeholder="${S.lang==='zh'?'盘点情况说明...':'Stocktake notes...'}">
+    </div>
+    <button class="btn btn-gold w100 mt10" onclick="submitStocktake('${cid}')">
+      📋 ${S.lang==='zh'?'提交盘点':'Submit Stocktake'}
+    </button>`;
+}
+
+function updateStDiff(pid,sys) {
+  const counted=parseInt($('sti-'+pid)?.value)||0;
+  const diff=counted-sys;
+  const el=$('std-'+pid);
+  if(el){el.textContent=(diff>0?'+':'')+diff;el.style.color=diff<0?'var(--red)':diff>0?'var(--orange)':'var(--t3)';}
+}
+
+async function submitStocktake(cid) {
+  const products=await GET('products',`container_id=eq.${cid}`,'*');
+  const stock=await GET('stock',`container_id=eq.${cid}`);
+  const sm={}; (stock||[]).forEach(s=>sm[s.product_id]=s);
+  const note=$('st-note')?.value||'';
+  let hasDiff=false;
+  for(const p of (products||[])){
+    const counted=parseInt($('sti-'+p.id)?.value)||0;
+    const sys=sm[p.id]?.qty||0;
+    const diff=counted-sys;
+    if(diff!==0) hasDiff=true;
+    await POST('stocktake',{
+      container_id:cid, product_id:p.id, product_name:p.name,
+      system_qty:sys, counted_qty:counted, diff,
+      note, submitted_by:S.user.id, submitted_at:now(), status:'pending'
+    });
+  }
+  if(hasDiff){
+    await pushNotif(null,'super','⚠️ Stocktake discrepancies',`Container ${cid} has differences. Please review.`,'system');
+    toast(S.lang==='zh'?'盘点已提交，差异已上报超管':'Stocktake submitted. Discrepancies flagged to super admin.','info',4000);
+  } else {
+    toast(S.lang==='zh'?'盘点完成，库存一致':'Stocktake complete. No discrepancies!','success');
+  }
+  whTab('stocktake');
+}
+
+</script>
+<script>
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: ALL ORDERS (Super Admin)
+// ═══════════════════════════════════════════════════════════
+let _aoStatus = 'all';
+
+async function pageAllOrders() {
+  html('content', `
+    <div class="page-title">🗂️ ${S.lang==='zh'?'全部订单':'All Orders'}</div>
+    <div class="filter-row">
+      ${['all','submitted','sales_approved','finance_confirmed','shipped','completed','cancelled','sales_rejected'].map((s,i)=>`
+        <button class="btn btn-dark btn-sm filter-btn ${i===0?'factive':''}" id="ao-${s}"
+          onclick="filterAllOrders('${s}')">
+          ${s==='all'?(S.lang==='zh'?'全部':'All'):(SC[s]?(S.lang==='zh'?SC[s].zh:SC[s].en):s)}
+        </button>`).join('')}
+    </div>
+    <div class="row-gap mt10 mb10">
+      <input class="inp" id="ao-search" placeholder="🔍 Order ID / Customer name / Phone..."
+        style="flex:1;min-width:160px;padding:8px 12px"
+        oninput="debounceSearch()">
+      <button class="btn btn-dark btn-sm" onclick="exportCSV()">⬇ CSV</button>
+    </div>
+    <div id="ao-list"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  await loadAllOrders();
+}
+
+function debounceSearch() {
+  clearTimeout(window._dst);
+  window._dst = setTimeout(loadAllOrders, 380);
+}
+
+async function filterAllOrders(status) {
+  _aoStatus = status;
+  document.querySelectorAll('[id^="ao-"]').forEach(el=>el.classList.remove('factive'));
+  $('ao-'+status)?.classList.add('factive');
+  await loadAllOrders();
+}
+
+async function loadAllOrders() {
+  const search = $('ao-search')?.value?.trim()||'';
+  try {
+    let filter = _aoStatus!=='all' ? `status=eq.${_aoStatus}` : undefined;
+    if (search) {
+      const sf = `or=(id.ilike.*${search}*,customer_name.ilike.*${search}*,customer_phone.ilike.*${search}*)`;
+      filter = filter ? filter+'&'+sf : sf;
+    }
+    const orders = await GET('orders', filter, '*');
+    orders?.sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+    const el = $('ao-list');
+    if (!orders?.length) { el.innerHTML=`<div class="empty">${t('no_data')}</div>`; return; }
+    el.innerHTML = orders.map(o => orderCard(o,'super')).join('');
+  } catch(e) { html('ao-list',`<div class="err">${e.message}</div>`); }
+}
+
+async function superUndoCancel(oid) {
+  const order = (await GET('orders',`id=eq.${oid}`))?.[0];
+  if (!order) return;
+  const prevStatus = order.shipped_at ? 'finance_confirmed' : 'sales_approved';
+  if (!confirm(`Restore order ${oid} to "${prevStatus}"? Stock will be restored.`)) return;
+  try {
+    const items = await GET('order_items',`order_id=eq.${oid}`);
+    for (const i of (items||[])) {
+      const s = (await GET('stock',`product_id=eq.${i.product_id}`))?.[0];
+      if (!s) continue;
+      await PATCH('stock',`product_id=eq.${i.product_id}`,{
+        qty: (s.qty||0)+i.qty,
+        reserved: (s.reserved||0)+i.qty,
+        updated_at: now()
+      });
+    }
+    await PATCH('orders',`id=eq.${oid}`,{
+      status: prevStatus,
+      cancelled_at: null, cancelled_by: null,
+      completed_at: null, shipped_at: null
+    });
+    toast('Order restored ✓','success');
+    loadAllOrders();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function exportCSV() {
+  try {
+    const orders = await GET('orders', undefined, '*');
+    orders?.sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+    const headers = ['ID','Customer','Phone','Container','Status','PayMethod','PayActual',
+      'Subtotal','Discount','Total','HasDiscount','AssignedSales','FinanceBy',
+      'SubmittedAt','ShippedAt','CompletedAt','CancelledAt'];
+    const rows = (orders||[]).map(o=>[
+      o.id, o.customer_name, o.customer_phone, o.container_name, o.status,
+      o.pay_method, o.pay_method_actual||'', o.subtotal||0, o.discount_total||0, o.total||0,
+      o.has_discount?'YES':'NO', o.assigned_sales||'', o.finance_confirmed_by||'',
+      o.submitted_at||'', o.shipped_at||'', o.completed_at||'', o.cancelled_at||''
+    ]);
+    const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF'+csv,],{type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `DSM_Orders_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    toast('CSV exported ✓','success');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: CONTAINERS MANAGEMENT (Super Admin)
+// ═══════════════════════════════════════════════════════════
+async function pageContainersMgmt() {
+  html('content', `
+    <div class="row-between mb14">
+      <div class="page-title mb0">🚢 ${S.lang==='zh'?'货柜管理':'Containers'}</div>
+      <button class="btn btn-gold btn-sm" onclick="openAddContainer()">+ ${S.lang==='zh'?'新建':'New'}</button>
+    </div>
+    <div id="ctr-list"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  await loadContainersList();
+}
+
+async function loadContainersList() {
+  try {
+    const containers = await GET('containers', undefined, '*');
+    containers?.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+
+    // Stock summary per container
+    const stock = await GET('stock', undefined, 'container_id,qty,available,reserved');
+    const sm = {};
+    (stock||[]).forEach(s=>{
+      sm[s.container_id] = sm[s.container_id]||{qty:0,available:0,reserved:0};
+      sm[s.container_id].qty       += s.qty||0;
+      sm[s.container_id].available += s.available||0;
+      sm[s.container_id].reserved  += s.reserved||0;
+    });
+
+    if (!containers?.length) { html('ctr-list',`<div class="empty">${t('no_data')}</div>`); return; }
+    html('ctr-list', containers.map(c=>{
+      const st = sm[c.id]||{qty:0,available:0,reserved:0};
+      return `
+      <div class="card mb10" style="border-left:4px solid ${c.color||'#f59e0b'}">
+        <div class="row-between mb8">
+          <div style="flex:1;min-width:0">
+            <div class="row-gap mb4">
+              <span class="fw800">${c.name}</span>
+              <span class="badge ${c.status==='active'?'badge-green':c.status==='incoming'?'badge-yellow':'badge-gray'}">${c.status}</span>
+              ${c.is_new?'<span class="badge badge-yellow">NEW</span>':''}
+            </div>
+            <div class="sub">🌍 ${c.origin||'—'} · 📅 ${c.arrival_date||'TBD'}</div>
+            <div class="sub">Total: ${st.qty} · Avail: ${st.available} · Reserved: ${st.reserved}</div>
+            ${c.note?`<div class="sub">📝 ${c.note}</div>`:''}
+          </div>
+        </div>
+        <div class="row-gap" style="flex-wrap:wrap">
+          <button class="btn btn-dark btn-sm" onclick="openEditContainer('${c.id}')">✏️ Edit</button>
+          <button class="btn btn-gold btn-sm" onclick="openProductsMgmt('${c.id}')">📦 Products</button>
+          <button class="btn btn-green btn-sm" onclick="openCreateReceipt('${c.id}')">📥 Inbound</button>
+          <button class="btn btn-dark btn-sm" onclick="previewStocktakes('${c.id}')">📋 Stocktakes</button>
+        </div>
+      </div>`; }).join(''));
+  } catch(e) { html('ctr-list',`<div class="err">${e.message}</div>`); }
+}
+
+function openAddContainer() {
+  modal(`
+    <div class="modal-title">🚢 ${S.lang==='zh'?'新建货柜':'New Container'}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div class="form-g"><label class="lbl">Container ID / Name *</label>
+      <input class="inp" id="nc-name" placeholder="e.g. EMCU8814320 5A"></div>
+    <div class="form-g"><label class="lbl">Origin Country</label>
+      <input class="inp" id="nc-origin" placeholder="e.g. United Kingdom"></div>
+    <div class="form-row">
+      <div class="form-g"><label class="lbl">Arrival Date</label>
+        <input class="inp" id="nc-date" type="date"></div>
+      <div class="form-g"><label class="lbl">Color Tag</label>
+        <input class="inp" id="nc-color" type="color" value="#f59e0b" style="height:44px;padding:4px"></div>
+    </div>
+    <div class="form-g"><label class="lbl">Note</label>
+      <input class="inp" id="nc-note" placeholder="Optional notes..."></div>
+    <div class="form-g">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="nc-isnew" checked> Mark as NEW arrival
+      </label>
+    </div>
+    <button class="btn btn-gold w100 mt8" onclick="saveNewContainer()">Save Container</button>`);
+}
+
+async function saveNewContainer() {
+  const name = $('nc-name')?.value?.trim();
+  if (!name) return toast('Container name required','error');
+  const cid = name.toUpperCase().replace(/[^A-Z0-9]/g,'_').slice(0,20)+'_'+Date.now().toString(36).toUpperCase();
+  try {
+    await POST('containers',{
+      id:cid, name,
+      origin:$('nc-origin')?.value?.trim()||'',
+      arrival_date:$('nc-date')?.value||null,
+      color:$('nc-color')?.value||'#f59e0b',
+      is_new:$('nc-isnew')?.checked??true,
+      note:$('nc-note')?.value?.trim()||'',
+      status:'incoming', created_by:S.user.id, created_at:now()
+    });
+    closeModal(); toast('Container created ✓','success');
+    loadContainersList();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function openEditContainer(cid) {
+  GET('containers',`id=eq.${cid}`).then(rows=>{
+    const c=rows?.[0]; if(!c) return;
+    modal(`
+      <div class="modal-title">✏️ Edit: ${c.name}
+        <span class="modal-x" onclick="closeModal()">×</span></div>
+      <div class="form-g"><label class="lbl">Name</label>
+        <input class="inp" id="ec-name" value="${c.name||''}"></div>
+      <div class="form-g"><label class="lbl">Origin</label>
+        <input class="inp" id="ec-origin" value="${c.origin||''}"></div>
+      <div class="form-row">
+        <div class="form-g"><label class="lbl">Arrival Date</label>
+          <input class="inp" id="ec-date" type="date" value="${c.arrival_date||''}"></div>
+        <div class="form-g"><label class="lbl">Color</label>
+          <input class="inp" id="ec-color" type="color" value="${c.color||'#f59e0b'}" style="height:44px;padding:4px"></div>
+      </div>
+      <div class="form-g"><label class="lbl">Status</label>
+        <select class="inp" id="ec-status">
+          <option value="incoming" ${c.status==='incoming'?'selected':''}>Incoming</option>
+          <option value="active"   ${c.status==='active'?'selected':''}>Active</option>
+          <option value="closed"   ${c.status==='closed'?'selected':''}>Closed</option>
+        </select></div>
+      <div class="form-g"><label class="lbl">Note</label>
+        <input class="inp" id="ec-note" value="${c.note||''}"></div>
+      <div class="form-g">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="ec-isnew" ${c.is_new?'checked':''}> Mark as NEW
+        </label>
+      </div>
+      <button class="btn btn-gold w100 mt8" onclick="saveEditContainer('${cid}')">Save Changes</button>`);
+  });
+}
+
+async function saveEditContainer(cid) {
+  try {
+    await PATCH('containers',`id=eq.${cid}`,{
+      name:$('ec-name')?.value?.trim(),
+      origin:$('ec-origin')?.value?.trim(),
+      arrival_date:$('ec-date')?.value||null,
+      color:$('ec-color')?.value,
+      status:$('ec-status')?.value,
+      note:$('ec-note')?.value?.trim(),
+      is_new:$('ec-isnew')?.checked??false,
+    });
+    closeModal(); toast('Container updated ✓','success'); loadContainersList();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function openProductsMgmt(cid) {
+  const [cRows,products] = await Promise.all([
+    GET('containers',`id=eq.${cid}`,'id,name'),
+    GET('products',`container_id=eq.${cid}`,'*')
+  ]);
+  const c=cRows?.[0]; products?.sort((a,b)=>a.sort_order-b.sort_order);
+  modal(`
+    <div class="modal-title">📦 Products: ${c?.name}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div style="max-height:50vh;overflow-y:auto">
+      <div class="table-wrap">
+        <table id="prod-tbl">
+          <thead><tr><th>#</th><th>Code</th><th>Name (EN)</th><th class="tr">Price K</th><th></th></tr></thead>
+          <tbody>
+            ${(products||[]).map((p,i)=>`
+              <tr id="ptr-${p.id}">
+                <td class="sub">${i+1}</td>
+                <td><input style="background:transparent;border:none;color:var(--t2);width:90px;font-family:monospace;font-size:12px" id="pc-${p.id}" value="${p.code}"></td>
+                <td><input style="background:transparent;border:none;color:var(--text);width:150px" id="pn-${p.id}" value="${p.name}"></td>
+                <td class="tr"><input type="number" style="background:transparent;border:none;color:var(--gold);width:55px;text-align:right;font-weight:700" id="pp-${p.id}" value="${Math.round(p.unit_price/1000)}"></td>
+                <td><button class="btn btn-red-soft btn-sm" onclick="deleteProduct('${p.id}','${cid}')">✕</button></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <!-- Add new row -->
+      <div style="display:grid;grid-template-columns:90px 1fr 70px auto;gap:6px;padding:10px 0;border-top:1px solid var(--border);margin-top:8px">
+        <input class="inp" id="np-code" placeholder="Code" style="padding:7px 10px;font-size:12px">
+        <input class="inp" id="np-name" placeholder="Product name" style="padding:7px 10px">
+        <input class="inp" type="number" id="np-price" placeholder="K" style="padding:7px 10px">
+        <button class="btn btn-gold btn-sm" onclick="addProduct('${cid}')">+ Add</button>
+      </div>
+    </div>
+    <div class="row-gap mt10">
+      <button class="btn btn-green w100" onclick="saveAllProducts('${cid}')">💾 Save All Changes</button>
+      <button class="btn btn-dark btn-sm" onclick="importProductsCSV('${cid}')">⬆ Import CSV</button>
+    </div>`);
+}
+
+async function addProduct(cid) {
+  const code  = $('np-code')?.value?.trim();
+  const name  = $('np-name')?.value?.trim();
+  const priceK = parseFloat($('np-price')?.value)||0;
+  if (!code||!name||!priceK) return toast('Fill Code, Name, and Price','error');
+  try {
+    const existing = await GET('products',`container_id=eq.${cid}`,`id`);
+    const sortOrder = (existing?.length||0)+1;
+    await POST('products',{
+      id:`${cid}_${code}`, container_id:cid, code, name,
+      unit_price:Math.round(priceK*1000), sort_order:sortOrder
+    });
+    toast('Product added ✓','success');
+    openProductsMgmt(cid);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function saveAllProducts(cid) {
+  const products = await GET('products',`container_id=eq.${cid}`,'*');
+  let saved=0;
+  for (const p of (products||[])) {
+    const code  = $('pc-'+p.id)?.value?.trim();
+    const name  = $('pn-'+p.id)?.value?.trim();
+    const priceK = parseFloat($('pp-'+p.id)?.value)||0;
+    if (!code||!name||!priceK) continue;
+    await PATCH('products',`id=eq.${p.id}`,{code,name,unit_price:Math.round(priceK*1000)});
+    saved++;
+  }
+  toast(`${saved} products saved ✓`,'success');
+  closeModal();
+}
+
+async function deleteProduct(pid, cid) {
+  if (!confirm('Delete this product? This cannot be undone if stock/orders exist.')) return;
+  try {
+    await DELETE('products',`id=eq.${pid}`);
+    await DELETE('stock',`product_id=eq.${pid}`);
+    toast('Product deleted','info');
+    openProductsMgmt(cid);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function importProductsCSV(cid) {
+  const input = document.createElement('input');
+  input.type='file'; input.accept='.csv';
+  input.onchange = async () => {
+    const file = input.files[0]; if(!file) return;
+    const text = await file.text();
+    const lines = text.split('\n').filter(l=>l.trim());
+    const existing = await GET('products',`container_id=eq.${cid}`,'id');
+    let added=0;
+    for (let i=1;i<lines.length;i++) { // skip header
+      const cols = lines[i].split(',').map(c=>c.replace(/^"|"$/g,'').trim());
+      if (cols.length<3) continue;
+      const [code,name,priceStr] = cols;
+      const price = parseFloat(priceStr)||0;
+      if (!code||!name||!price) continue;
+      try {
+        await POST('products',{
+          id:`${cid}_${code}`,container_id:cid,code,name,
+          unit_price:Math.round(price*1000),sort_order:(existing?.length||0)+added+1
+        });
+        added++;
+      } catch {}
+    }
+    toast(`${added} products imported ✓`,'success');
+    openProductsMgmt(cid);
+  };
+  input.click();
+}
+
+async function openCreateReceipt(cid) {
+  const c = (await GET('containers',`id=eq.${cid}`,'id,name'))?.[0];
+  const rid = 'REC'+Date.now().toString(36).toUpperCase();
+  try {
+    await POST('receipts',{
+      id:rid, container_id:cid, status:'pending',
+      created_by:S.user.id, created_at:now(), anomaly:false
+    });
+    await pushNotif(null,'warehouse','📥 New inbound receipt',`${rid} for ${c?.name||cid}. Please confirm stock count.`,'system');
+    toast(`Receipt ${rid} created. Warehouse notified.`,'success');
+    loadContainersList();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function previewStocktakes(cid) {
+  const rows = await GET('stocktake',`container_id=eq.${cid}`,'*');
+  rows?.sort((a,b)=>new Date(b.submitted_at)-new Date(a.submitted_at));
+  const pending = (rows||[]).filter(r=>r.status==='pending');
+  modal(`
+    <div class="modal-title">📋 Stocktakes: ${cid}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    ${pending.length?`<div class="notice notice-orange mb10">⚠️ ${pending.length} pending reviews</div>`:''}
+    <div style="max-height:55vh;overflow-y:auto">
+      ${(rows||[]).length ? rows.map(s=>`
+        <div class="row-between py8 border-b">
+          <div>
+            <div class="fw600">${s.product_name}</div>
+            <div class="sub">System:${s.system_qty} → Counted:${s.counted_qty}
+              · <span class="${s.diff<0?'text-red':s.diff>0?'text-orange':'text-t3'}">${s.diff>0?'+':''}${s.diff}</span></div>
+            <div class="sub" style="font-size:10px">${new Date(s.submitted_at).toLocaleString()} · ${s.submitted_by}</div>
+            ${s.note?`<div class="sub">${s.note}</div>`:''}
+          </div>
+          <div class="row-gap">
+            <span class="badge ${s.status==='approved'?'badge-green':s.status==='rejected'?'badge-red':'badge-yellow'}">${s.status}</span>
+            ${s.status==='pending'?`
+              <button class="btn btn-green btn-sm" onclick="approveStocktake(${s.id})">✓</button>
+              <button class="btn btn-red-soft btn-sm" onclick="rejectStocktake(${s.id},${s.product_id},${s.system_qty},${s.counted_qty})">✕</button>
+            `:''}
+          </div>
+        </div>`).join('')
+      :`<div class="empty">${t('no_data')}</div>`}
+    </div>`);
+}
+
+async function approveStocktake(id) {
+  const row = (await GET('stocktake',`id=eq.${id}`))?.[0];
+  if (!row) return;
+  try {
+    // Adjust stock to match counted
+    if (row.diff !== 0) {
+      const s = (await GET('stock',`product_id=eq.${row.product_id}`))?.[0];
+      if (s) {
+        const newQty   = Math.max(0,(s.qty||0)+row.diff);
+        const newAvail = Math.max(0,(s.available||0)+row.diff);
+        await PATCH('stock',`product_id=eq.${row.product_id}`,{qty:newQty,available:newAvail,updated_at:now()});
+      }
+    }
+    await PATCH('stocktake',`id=eq.${id}`,{status:'approved',approved_by:S.user.id,approved_at:now()});
+    toast('Stocktake approved. Stock adjusted ✓','success');
+    previewStocktakes(row.container_id);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function rejectStocktake(id, pid, sysQty, cntQty) {
+  try {
+    await PATCH('stocktake',`id=eq.${id}`,{status:'rejected',approved_by:S.user.id,approved_at:now()});
+    toast('Stocktake rejected. Stock unchanged.','info');
+    const row = (await GET('stocktake',`id=eq.${id}`))?.[0];
+    if (row) previewStocktakes(row.container_id);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: USERS MANAGEMENT (Super Admin)
+// ═══════════════════════════════════════════════════════════
+async function pageUsers() {
+  html('content', `
+    <div class="page-title">👥 ${S.lang==='zh'?'用户管理':'Users'}</div>
+    <div class="filter-row">
+      ${['all','pending','customer','reviewer','finance','warehouse','super'].map((r,i)=>`
+        <button class="btn btn-dark btn-sm filter-btn ${i===0?'factive':''}" id="ur-${r}"
+          onclick="filterUsers('${r}')">
+          ${r==='all'?(S.lang==='zh'?'全部':'All'):r==='pending'?(S.lang==='zh'?'待审批':'Pending'):r}
+        </button>`).join('')}
+    </div>
+    <div id="users-list"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  await loadUsers('all');
+}
+
+async function filterUsers(filter) {
+  document.querySelectorAll('[id^="ur-"]').forEach(el=>el.classList.remove('factive'));
+  $('ur-'+filter)?.classList.add('factive');
+  await loadUsers(filter);
+}
+
+async function loadUsers(filter) {
+  try {
+    let q = 'deleted=eq.false';
+    if (filter==='pending') q+=`&status=eq.pending`;
+    else if (filter!=='all') q+=`&role=eq.${filter}`;
+    const users = await GET('users',q,'*');
+    users?.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    const el=$('users-list');
+    if(!users?.length){el.innerHTML=`<div class="empty">${t('no_data')}</div>`;return;}
+    el.innerHTML=users.map(u=>userCard(u)).join('');
+  } catch(e){html('users-list',`<div class="err">${e.message}</div>`);}
+}
+
+function userCard(u) {
+  const roleColors = {super:'badge-purple',reviewer:'badge-blue',finance:'badge-green',warehouse:'badge-orange',customer:'badge-gray'};
+  return `
+  <div class="card mb8 ${u.status==='pending'?'card-warn':''}">
+    <div class="row-between">
+      <div style="flex:1;min-width:0">
+        <div class="row-gap mb4">
+          <span class="fw800">${u.name}</span>
+          <span class="badge ${roleColors[u.role]||'badge-gray'}">${u.role}</span>
+          <span class="badge ${u.status==='active'?'badge-green':u.status==='pending'?'badge-yellow':'badge-red'}">${u.status}</span>
+          ${u.disabled?'<span class="badge badge-red">Disabled</span>':''}
+        </div>
+        <div class="sub">${u.id} · 📱 ${u.phone}</div>
+        ${u.district?`<div class="sub">📍 ${u.district}${u.address?', '+u.address:''}</div>`:''}
+        ${u.assigned_to?`<div class="sub">👤 Assigned to: ${u.assigned_to}</div>`:''}
+        <div class="sub" style="font-size:10px">Joined ${new Date(u.created_at).toLocaleDateString()}</div>
+      </div>
+      <div class="row-gap" style="flex-direction:column;align-items:flex-end">
+        ${u.status==='pending'?`
+          <div class="row-gap">
+            <button class="btn btn-green btn-sm" onclick="superApproveUser('${u.id}')">✓ Approve</button>
+            <button class="btn btn-red-soft btn-sm" onclick="superRejectUser('${u.id}')">✕</button>
+          </div>`:
+          `<button class="btn btn-dark btn-sm" onclick="openEditUser('${u.id}')">✏️ Edit</button>`}
+        <button class="btn btn-dark btn-sm" onclick="toggleDisableUser('${u.id}',${u.disabled})">
+          ${u.disabled?'Enable':'Disable'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function superApproveUser(uid) {
+  try {
+    const u = (await GET('users',`id=eq.${uid}`))?.[0];
+    if(!u) return;
+    const update = {status:'active',approved_by:S.user.id,approved_at:now()};
+    // Auto-assign customers if approved by reviewer
+    if (u.role==='customer' && S.user.role==='reviewer') update.assigned_to=S.user.id;
+    await PATCH('users',`id=eq.${uid}`,update);
+    await pushNotif(uid,'',`✅ ${S.lang==='zh'?'账号已激活':'Account approved!'}`,
+      u.role==='customer'?'You can now log in and place orders.':'Your staff account is now active.','system');
+    toast('User approved ✓','success');
+    loadUsers('pending');
+  } catch(e){toast(e.message,'error');}
+}
+
+async function superRejectUser(uid) {
+  const reason = prompt('Rejection reason (optional):')||'';
+  try {
+    await PATCH('users',`id=eq.${uid}`,{status:'rejected'});
+    await pushNotif(uid,'','❌ Registration rejected',reason||'Please contact admin.','system');
+    toast('User rejected','info'); loadUsers('pending');
+  } catch(e){toast(e.message,'error');}
+}
+
+async function toggleDisableUser(uid, isDisabled) {
+  if(!confirm(`${isDisabled?'Enable':'Disable'} this user?`)) return;
+  try {
+    await PATCH('users',`id=eq.${uid}`,{disabled:!isDisabled});
+    toast(isDisabled?'User enabled ✓':'User disabled','info');
+    loadUsers('all');
+  } catch(e){toast(e.message,'error');}
+}
+
+async function openEditUser(uid) {
+  const u=(await GET('users',`id=eq.${uid}`))?.[0]; if(!u) return;
+  const salesStaff=await GET('users','role=eq.reviewer&status=eq.active&deleted=eq.false','id,name');
+  modal(`
+    <div class="modal-title">✏️ Edit User: ${u.name}
+      <span class="modal-x" onclick="closeModal()">×</span></div>
+    <div class="form-g"><label class="lbl">Name</label>
+      <input class="inp" id="eu-name" value="${u.name||''}"></div>
+    <div class="form-g"><label class="lbl">Phone</label>
+      <input class="inp" id="eu-phone" value="${u.phone||''}"></div>
+    <div class="form-g"><label class="lbl">Role</label>
+      <select class="inp" id="eu-role">
+        ${['customer','reviewer','finance','warehouse','super'].map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${r}</option>`).join('')}
+      </select></div>
+    ${u.role==='customer'?`
+    <div class="form-g"><label class="lbl">Assigned Salesperson</label>
+      <select class="inp" id="eu-sales">
+        <option value="">None</option>
+        ${(salesStaff||[]).map(s=>`<option value="${s.id}" ${u.assigned_to===s.id?'selected':''}>${s.id} · ${s.name}</option>`).join('')}
+      </select></div>`:''}
+    <div class="form-g"><label class="lbl">District</label>
+      <input class="inp" id="eu-dist" value="${u.district||''}"></div>
+    <div class="form-g"><label class="lbl">Address</label>
+      <input class="inp" id="eu-addr" value="${u.address||''}"></div>
+    <div class="form-g"><label class="lbl">Reset Password (leave blank to keep)</label>
+      <input class="inp" type="password" id="eu-pw" placeholder="New password..."></div>
+    <button class="btn btn-gold w100 mt8" onclick="saveEditUser('${uid}','${u.role}')">Save Changes</button>`);
+}
+
+async function saveEditUser(uid, oldRole) {
+  const upd = {
+    name:   $('eu-name')?.value?.trim(),
+    phone:  $('eu-phone')?.value?.trim(),
+    role:   $('eu-role')?.value,
+    district:$('eu-dist')?.value?.trim()||'',
+    address:$('eu-addr')?.value?.trim()||'',
+  };
+  if (oldRole==='customer') upd.assigned_to = $('eu-sales')?.value||'';
+  const newPw = $('eu-pw')?.value?.trim();
+  if (newPw) { if(newPw.length<4) return toast('Password min 4 chars','error'); upd.pw=newPw; }
+  try {
+    await PATCH('users',`id=eq.${uid}`,upd);
+    closeModal(); toast('User updated ✓','success'); loadUsers('all');
+  } catch(e){toast(e.message,'error');}
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE: ANALYTICS
+// ═══════════════════════════════════════════════════════════
+async function pageAnalytics() {
+  html('content', `
+    <div class="page-title">📊 ${S.lang==='zh'?'数据分析':'Analytics'}</div>
+    <div class="filter-row mb14">
+      ${['overview','presale','sales','customers','containers'].map((tab,i)=>`
+        <button class="btn btn-dark btn-sm filter-btn ${i===0?'factive':''}" id="an-${tab}"
+          onclick="loadAnalyticsTab('${tab}')">
+          ${tab==='overview'?(S.lang==='zh'?'总览':'Overview')
+            :tab==='presale'?(S.lang==='zh'?'预售分析':'Pre-sale')
+            :tab==='sales'?(S.lang==='zh'?'销售':'Sales')
+            :tab==='customers'?(S.lang==='zh'?'客户':'Customers')
+            :(S.lang==='zh'?'货柜':'Containers')}
+        </button>`).join('')}
+    </div>
+    <div id="analytics-body"><div class="center-spin"><span class="spin-lg"></span></div></div>`);
+  await loadAnalyticsTab('overview');
+}
+
+async function loadAnalyticsTab(tab) {
+  document.querySelectorAll('[id^="an-"]').forEach(el=>el.classList.remove('factive'));
+  $('an-'+tab)?.classList.add('factive');
+  const el=$('analytics-body');
+  el.innerHTML=`<div class="center-spin"><span class="spin-lg"></span></div>`;
+  try {
+    if (tab==='overview') await analyticsOverview(el);
+    else if (tab==='presale') await analyticsPresale(el);
+    else if (tab==='sales') await analyticsSales(el);
+    else if (tab==='customers') await analyticsCustomers(el);
+    else if (tab==='containers') await analyticsContainers(el);
+  } catch(e){el.innerHTML=`<div class="err">${e.message}</div>`;}
+}
+
+async function analyticsOverview(el) {
+  const [orders, users, stock] = await Promise.all([
+    GET('orders', 'status=not.in.(cancelled,sales_rejected)', '*'),
+    GET('users', 'deleted=eq.false', 'role,status'),
+    GET('stock', undefined, 'available,reserved,qty'),
+  ]);
+
+  const totalRevenue  = (orders||[]).filter(o=>o.status==='completed').reduce((s,o)=>s+(o.total||0),0);
+  const pendingOrders = (orders||[]).filter(o=>['submitted','sales_approved','finance_confirmed','shipped'].includes(o.status)).length;
+  const completedOrders = (orders||[]).filter(o=>o.status==='completed').length;
+  const activeCustomers = (users||[]).filter(u=>u.role==='customer'&&u.status==='active').length;
+  const totalAvail  = (stock||[]).reduce((s,r)=>s+(r.available||0),0);
+  const totalReserved = (stock||[]).reduce((s,r)=>s+(r.reserved||0),0);
+  const overdueCredit = (orders||[]).filter(o=>
+    o.pay_method==='Credit'&&!o.credit_paid&&o.credit_due_date&&new Date(o.credit_due_date)<new Date()).length;
+
+  // Orders by status (last 30 days)
+  const cutoff30 = new Date(Date.now()-30*86400000).toISOString();
+  const recent30 = (orders||[]).filter(o=>o.submitted_at>=cutoff30);
+  const byStatus = {};
+  recent30.forEach(o=>{ byStatus[o.status]=(byStatus[o.status]||0)+1; });
+
+  // Revenue last 7 days
+  const days7 = Array.from({length:7},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-6+i); return d.toISOString().slice(0,10);
+  });
+  const rev7 = days7.map(day=>({
+    day: day.slice(5),
+    rev: (orders||[]).filter(o=>o.status==='completed'&&(o.completed_at||'').slice(0,10)===day).reduce((s,o)=>s+(o.total||0),0)
+  }));
+
+  el.innerHTML=`
+    <div class="stat-grid mb14">
+      <div class="stat-card">
+        <div class="stat-lbl">💰 ${S.lang==='zh'?'已完成收入':'Completed Revenue'}</div>
+        <div class="stat-val">${fmtK(totalRevenue)}</div>
+        <div class="stat-sub">TZS</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">📋 ${S.lang==='zh'?'进行中订单':'Active Orders'}</div>
+        <div class="stat-val">${pendingOrders}</div>
+        <div class="stat-sub">${completedOrders} completed total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">👥 ${S.lang==='zh'?'活跃客户':'Active Customers'}</div>
+        <div class="stat-val">${activeCustomers}</div>
+        <div class="stat-sub">${(users||[]).filter(u=>u.role==='customer'&&u.status==='pending').length} pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">📦 ${S.lang==='zh'?'可发货库存':'Avail Stock'}</div>
+        <div class="stat-val">${totalAvail}</div>
+        <div class="stat-sub">${totalReserved} reserved</div>
+      </div>
+      ${overdueCredit>0?`
+      <div class="stat-card stat-warn">
+        <div class="stat-lbl">⚠️ ${S.lang==='zh'?'信用逾期':'Credit Overdue'}</div>
+        <div class="stat-val text-orange">${overdueCredit}</div>
+        <div class="stat-sub">${S.lang==='zh'?'订单逾期未付款':'Orders past due date'}</div>
+      </div>`:''}
+    </div>
+
+    <!-- Revenue chart 7 days -->
+    <div class="card mb12">
+      <div class="card-title">📈 ${S.lang==='zh'?'近7天已完成收入':'Revenue — Last 7 Days'}</div>
+      <canvas id="rev-chart" height="180"></canvas>
+    </div>
+
+    <!-- Order status breakdown 30 days -->
+    <div class="card mb12">
+      <div class="card-title">📊 ${S.lang==='zh'?'订单状态分布（近30天）':'Order Status — Last 30 Days'}</div>
+      <canvas id="status-chart" height="200"></canvas>
+    </div>`;
+
+  // Revenue bar chart
+  setTimeout(()=>{
+    const ctx1 = $('rev-chart');
+    if (ctx1) new Chart(ctx1,{
+      type:'bar',
+      data:{
+        labels:rev7.map(d=>d.day),
+        datasets:[{label:S.lang==='zh'?'收入 TZS':'Revenue TZS',
+          data:rev7.map(d=>d.rev),
+          backgroundColor:'rgba(245,158,11,0.7)',borderColor:'#f59e0b',borderWidth:1}]
+      },
+      options:{responsive:true,plugins:{legend:{display:false}},
+        scales:{y:{ticks:{callback:v=>fmtK(v)},grid:{color:'rgba(255,255,255,0.05)'}},
+          x:{grid:{display:false}}}}
+    });
+    const ctx2 = $('status-chart');
+    const statusLabels = Object.keys(byStatus);
+    const statusData   = Object.values(byStatus);
+    const colors = ['#f59e0b','#6366f1','#a855f7','#f97316','#10b981','#ef4444','#6b7280'];
+    if (ctx2) new Chart(ctx2,{
+      type:'doughnut',
+      data:{labels:statusLabels,datasets:[{data:statusData,backgroundColor:colors,borderWidth:0}]},
+      options:{responsive:true,plugins:{legend:{position:'right',labels:{color:'rgba(255,255,255,0.7)',boxWidth:12}}}}
+    });
+  },100);
+}
+
+async function analyticsPresale(el) {
+  const containers = await GET('containers','status=in.(incoming,active)','id,name,arrival_date');
+  if (!containers?.length) { el.innerHTML=`<div class="empty">${S.lang==='zh'?'没有未到货货柜':'No upcoming containers'}</div>`; return; }
+
+  // Aggregate pre-orders per product (orders on incoming containers)
+  const cIds = containers.map(c=>c.id);
+  const orders = await GET('orders',
+    `container_id=in.(${cIds.join(',')})&status=in.(submitted,sales_approved,finance_confirmed)`, '*');
+  const items = orders?.length ? await GET('order_items',
+    `order_id=in.(${orders.map(o=>o.id).join(',')})`, '*') : [];
+
+  const products = await GET('products',
+    `container_id=in.(${cIds.join(',')})`, '*');
+  const stock    = await GET('stock',
+    `container_id=in.(${cIds.join(',')})`, '*');
+  const sm={}; (stock||[]).forEach(s=>sm[s.product_id]=s);
+  const pm={}; (products||[]).forEach(p=>pm[p.id]=p);
+
+  // Pre-order qty per product
+  const preorderQty={}, preorderVal={};
+  (items||[]).forEach(i=>{
+    preorderQty[i.product_id]=(preorderQty[i.product_id]||0)+i.qty;
+    preorderVal[i.product_id]=(preorderVal[i.product_id]||0)+i.subtotal;
+  });
+
+  // Sort by pre-order qty desc
+  const sorted = Object.entries(preorderQty).sort((a,b)=>b[1]-a[1]);
+
+  // Sales performance per salesperson
+  const salesPerf={};
+  (orders||[]).forEach(o=>{
+    if(o.assigned_sales){
+      salesPerf[o.assigned_sales]=salesPerf[o.assigned_sales]||{orders:0,value:0};
+      salesPerf[o.assigned_sales].orders++;
+      salesPerf[o.assigned_sales].value+=(o.total||0);
+    }
+  });
+
+  // Slow movers: available > 0, preorder < threshold
+  const slowMovers = (products||[]).filter(p=>{
+    const av=(sm[p.id]?.available||0);
+    const po=preorderQty[p.id]||0;
+    return av>0 && po<2; // less than 2 bales pre-ordered
+  });
+
+  el.innerHTML=`
+    <div class="card mb12">
+      <div class="card-title">🔥 ${S.lang==='zh'?'预售热度排名':'Pre-order Popularity Ranking'}</div>
+      ${sorted.length?`
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>${S.lang==='zh'?'商品':'Product'}</th>
+            <th class="tr">${S.lang==='zh'?'预订量':'Pre-orders'}</th>
+            <th class="tr">${S.lang==='zh'?'预订金额':'Value'}</th>
+            <th class="tr">${S.lang==='zh'?'库存':'Stock'}</th>
+            <th class="tr">${S.lang==='zh'?'缺口':'Gap'}</th>
+          </tr></thead>
+          <tbody>
+            ${sorted.map(([pid,qty],i)=>{
+              const p=pm[pid]||{name:pid,code:''};
+              const avail=sm[pid]?.available||0;
+              const gap=qty-avail;
+              return `<tr>
+                <td class="sub">${i+1}</td>
+                <td><div class="fw600">${p.name}</div><div class="mono sub">${p.code}</div></td>
+                <td class="tr fw700 text-gold">${qty}</td>
+                <td class="tr">${fmtK(preorderVal[pid]||0)}</td>
+                <td class="tr ${avail>0?'text-green':'text-red'}">${avail}</td>
+                <td class="tr ${gap>0?'text-red fw700':''}">${gap>0?'+'+gap:gap}</td>
+              </tr>`; }).join('')}
+          </tbody>
+        </table>
+      </div>`:`<div class="empty">${S.lang==='zh'?'暂无预订数据':'No pre-orders yet'}</div>`}
+    </div>
+
+    <div class="card mb12">
+      <div class="card-title">🐌 ${S.lang==='zh'?'滞销品 (可捆绑推广)':'Slow Movers — Suggest Bundling'}</div>
+      ${slowMovers.length?`
+      <div class="notice notice-orange mb10">
+        ${S.lang==='zh'
+          ?'以下商品库存充足但预订量低。建议与热销品捆绑销售，或告知销售人员主动推荐。'
+          :'These items have stock but low pre-orders. Consider bundling with hot items or prompting your sales team.'}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${slowMovers.map(p=>`
+          <div class="badge badge-orange" style="padding:6px 12px;border-radius:8px">
+            ${p.name} · ${sm[p.id]?.available||0} avail · ${preorderQty[p.id]||0} pre-ordered
+          </div>`).join('')}
+      </div>`:`<div class="sub text-green">✓ All products have sufficient pre-orders</div>`}
+    </div>
+
+    <div class="card mb12">
+      <div class="card-title">👤 ${S.lang==='zh'?'销售员预售业绩':'Salesperson Pre-sale Performance'}</div>
+      ${Object.entries(salesPerf).length?`
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Sales ID</th>
+            <th class="tr">${S.lang==='zh'?'订单数':'Orders'}</th>
+            <th class="tr">${S.lang==='zh'?'金额':'Value'}</th>
+          </tr></thead>
+          <tbody>
+            ${Object.entries(salesPerf).sort((a,b)=>b[1].value-a[1].value).map(([sid,d])=>`
+              <tr>
+                <td class="fw700 mono">${sid}</td>
+                <td class="tr">${d.orders}</td>
+                <td class="tr fw700 text-gold">${fmtK(d.value)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`:`<div class="empty">${t('no_data')}</div>`}
+    </div>`;
+}
+
+async function analyticsSales(el) {
+  const orders = await GET('orders','status=not.in.(cancelled,sales_rejected)','*');
+  const completed = (orders||[]).filter(o=>o.status==='completed');
+
+  // By payment method
+  const byPay={};
+  completed.forEach(o=>{
+    const m=o.pay_method_actual||o.pay_method;
+    byPay[m]=byPay[m]||{count:0,value:0};
+    byPay[m].count++; byPay[m].value+=(o.total||0);
+  });
+
+  // Monthly revenue (last 6 months)
+  const months=Array.from({length:6},(_,i)=>{
+    const d=new Date(); d.setMonth(d.getMonth()-5+i);
+    return {key:d.toISOString().slice(0,7),label:d.toLocaleDateString(S.lang==='zh'?'zh-CN':'en-GB',{month:'short',year:'2-digit'})};
+  });
+  const monthlyRev = months.map(m=>({
+    label:m.label,
+    rev: completed.filter(o=>(o.completed_at||'').slice(0,7)===m.key).reduce((s,o)=>s+(o.total||0),0)
+  }));
+
+  // Sales by salesperson (completed)
+  const bySales={};
+  completed.forEach(o=>{
+    if(o.assigned_sales){
+      bySales[o.assigned_sales]=bySales[o.assigned_sales]||{orders:0,value:0,customers:new Set()};
+      bySales[o.assigned_sales].orders++;
+      bySales[o.assigned_sales].value+=(o.total||0);
+      bySales[o.assigned_sales].customers.add(o.customer_id);
+    }
+  });
+
+  // Discount stats
+  const discOrders=(orders||[]).filter(o=>o.has_discount);
+
+  el.innerHTML=`
+    <div class="stat-grid mb14">
+      <div class="stat-card">
+        <div class="stat-lbl">✅ ${S.lang==='zh'?'完成订单':'Completed'}</div>
+        <div class="stat-val">${completed.length}</div>
+        <div class="stat-sub">${fmtK(completed.reduce((s,o)=>s+(o.total||0),0))} TZS total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">🏷 ${S.lang==='zh'?'折扣订单':'Discount Orders'}</div>
+        <div class="stat-val text-orange">${discOrders.length}</div>
+        <div class="stat-sub">${(orders?.length?((discOrders.length/orders.length)*100).toFixed(1):0)}% of all orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">💳 ${S.lang==='zh'?'赊账未付':'Credit Unpaid'}</div>
+        <div class="stat-val">${(orders||[]).filter(o=>o.pay_method==='Credit'&&!o.credit_paid).length}</div>
+        <div class="stat-sub">${fmtK((orders||[]).filter(o=>o.pay_method==='Credit'&&!o.credit_paid).reduce((s,o)=>s+(o.total||0),0))} TZS</div>
+      </div>
+    </div>
+
+    <div class="card mb12">
+      <div class="card-title">📈 ${S.lang==='zh'?'近6月收入趋势':'Revenue — Last 6 Months'}</div>
+      <canvas id="monthly-chart" height="200"></canvas>
+    </div>
+
+    <div class="card mb12">
+      <div class="card-title">💵 ${S.lang==='zh'?'支付方式分布':'Payment Method Breakdown'}</div>
+      <canvas id="pay-chart" height="180"></canvas>
+    </div>
+
+    <div class="card mb12">
+      <div class="card-title">🏆 ${S.lang==='zh'?'销售员业绩排名':'Salesperson Performance'}</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>${S.lang==='zh'?'销售员':'Salesperson'}</th>
+            <th class="tr">${S.lang==='zh'?'客户':'Customers'}</th>
+            <th class="tr">${S.lang==='zh'?'完成单':'Orders'}</th>
+            <th class="tr">${S.lang==='zh'?'业绩':'Revenue'}</th>
+          </tr></thead>
+          <tbody>
+            ${Object.entries(bySales).sort((a,b)=>b[1].value-a[1].value).map(([sid,d])=>`
+              <tr>
+                <td class="fw800 mono">${sid}</td>
+                <td class="tr">${d.customers.size}</td>
+                <td class="tr">${d.orders}</td>
+                <td class="tr fw700 text-gold">${fmtK(d.value)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+
+  setTimeout(()=>{
+    const c1=$('monthly-chart');
+    if(c1) new Chart(c1,{type:'line',
+      data:{labels:monthlyRev.map(m=>m.label),
+        datasets:[{label:'TZS',data:monthlyRev.map(m=>m.rev),
+          borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',
+          tension:0.4,fill:true,pointRadius:4}]},
+      options:{responsive:true,plugins:{legend:{display:false}},
+        scales:{y:{ticks:{callback:v=>fmtK(v)},grid:{color:'rgba(255,255,255,0.05)'}},
+          x:{grid:{display:false}}}}});
+
+    const c2=$('pay-chart');
+    if(c2) new Chart(c2,{type:'bar',
+      data:{labels:Object.keys(byPay),
+        datasets:[{label:'Orders',data:Object.values(byPay).map(v=>v.count),
+          backgroundColor:['rgba(16,185,129,.7)','rgba(99,102,241,.7)','rgba(245,158,11,.7)','rgba(239,68,68,.7)'],
+          borderWidth:0}]},
+      options:{responsive:true,plugins:{legend:{display:false}},
+        scales:{y:{grid:{color:'rgba(255,255,255,0.05)'}},x:{grid:{display:false}}}}});
+  },100);
+}
+
+async function analyticsCustomers(el) {
+  const customers = await GET('users','role=eq.customer&deleted=eq.false','*');
+  const orders    = await GET('orders','status=eq.completed','customer_id,total,completed_at');
+
+  // Spend per customer
+  const spend={};
+  (orders||[]).forEach(o=>{
+    spend[o.customer_id]=(spend[o.customer_id]||0)+(o.total||0);
+  });
+
+  // By district
+  const byDist={};
+  (customers||[]).forEach(c=>{
+    const d=c.district||'Unknown';
+    byDist[d]=(byDist[d]||0)+1;
+  });
+
+  // Top customers
+  const topCust=(customers||[])
+    .map(c=>({...c,spend:spend[c.id]||0}))
+    .sort((a,b)=>b.spend-a.spend);
+
+  // Customers with unclear address
+  const badAddr=(customers||[]).filter(c=>!c.address&&!c.district);
+
+  el.innerHTML=`
+    <div class="stat-grid mb14">
+      <div class="stat-card">
+        <div class="stat-lbl">👥 ${S.lang==='zh'?'总客户':'Total Customers'}</div>
+        <div class="stat-val">${customers?.length||0}</div>
+        <div class="stat-sub">${(customers||[]).filter(c=>c.status==='active').length} active</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">📍 ${S.lang==='zh'?'区域数':'Districts'}</div>
+        <div class="stat-val">${Object.keys(byDist).length}</div>
+      </div>
+      ${badAddr.length?`
+      <div class="stat-card stat-warn">
+        <div class="stat-lbl">⚠️ ${S.lang==='zh'?'地址不完整':'Missing Address'}</div>
+        <div class="stat-val text-orange">${badAddr.length}</div>
+        <div class="stat-sub">${S.lang==='zh'?'请联系销售员补充':'Sales to follow up'}</div>
+      </div>`:''}
+    </div>
+
+    <div class="card mb12">
+      <div class="card-title">📍 ${S.lang==='zh'?'客户区域分布':'Customer Distribution by District'}</div>
+      <canvas id="dist-chart" height="220"></canvas>
+    </div>
+
+    <div class="card mb12">
+      <div class="card-title">🏆 ${S.lang==='zh'?'TOP 10 消费客户':'Top 10 Customers by Spend'}</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>${S.lang==='zh'?'客户':'Customer'}</th>
+            <th>ID</th><th>${S.lang==='zh'?'区域':'District'}</th>
+            <th class="tr">${S.lang==='zh'?'总消费':'Total Spend'}</th>
+          </tr></thead>
+          <tbody>
+            ${topCust.slice(0,10).map((c,i)=>`
+              <tr>
+                <td class="sub">${i+1}</td>
+                <td class="fw600">${c.name}</td>
+                <td class="mono sub">${c.id}</td>
+                <td class="sub">${c.district||'—'}</td>
+                <td class="tr fw700 text-gold">${fmtK(c.spend)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    ${badAddr.length?`
+    <div class="card mb12">
+      <div class="card-title">⚠️ ${S.lang==='zh'?'地址待完善的客户':'Customers Missing Address'}</div>
+      ${badAddr.map(c=>`
+        <div class="row-between py8 border-b">
+          <div><div class="fw600">${c.name}</div><div class="sub">${c.phone} · ${c.assigned_to||'Unassigned'}</div></div>
+          <span class="badge badge-orange">No address</span>
+        </div>`).join('')}
+    </div>`:''}`;
+
+  setTimeout(()=>{
+    const c=$('dist-chart');
+    if(c) new Chart(c,{type:'bar',
+      data:{labels:Object.keys(byDist),datasets:[{
+        label:S.lang==='zh'?'客户数':'Customers',
+        data:Object.values(byDist),
+        backgroundColor:'rgba(99,102,241,.7)',borderWidth:0}]},
+      options:{indexAxis:'y',responsive:true,
+        plugins:{legend:{display:false}},
+        scales:{x:{grid:{color:'rgba(255,255,255,0.05)'}},y:{grid:{display:false}}}}});
+  },100);
+}
+
+async function analyticsContainers(el) {
+  const containers = await GET('containers', undefined, '*');
+  const orders     = await GET('orders','status=not.in.(cancelled,sales_rejected)','*');
+  const stock      = await GET('stock', undefined, '*');
+
+  const sm={}; (stock||[]).forEach(s=>{
+    sm[s.container_id]=sm[s.container_id]||{qty:0,available:0,reserved:0};
+    sm[s.container_id].qty+=s.qty||0;
+    sm[s.container_id].available+=s.available||0;
+    sm[s.container_id].reserved+=s.reserved||0;
+  });
+
+  const cStats={};
+  (orders||[]).forEach(o=>{
+    cStats[o.container_id]=cStats[o.container_id]||{orders:0,revenue:0,pending:0};
+    cStats[o.container_id].orders++;
+    if(o.status==='completed') cStats[o.container_id].revenue+=(o.total||0);
+    else cStats[o.container_id].pending++;
+  });
+
+  el.innerHTML=`
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>${S.lang==='zh'?'货柜':'Container'}</th>
+          <th>${S.lang==='zh'?'状态':'Status'}</th>
+          <th class="tr">${S.lang==='zh'?'总库存':'Total Stock'}</th>
+          <th class="tr">${S.lang==='zh'?'可发货':'Available'}</th>
+          <th class="tr">${S.lang==='zh'?'已锁':'Reserved'}</th>
+          <th class="tr">${S.lang==='zh'?'已完成单':'Completed'}</th>
+          <th class="tr">${S.lang==='zh'?'已完成收入':'Revenue'}</th>
+          <th class="tr">${S.lang==='zh'?'进行中':'Active Orders'}</th>
+        </tr></thead>
+        <tbody>
+          ${(containers||[]).map(c=>{
+            const st=sm[c.id]||{qty:0,available:0,reserved:0};
+            const cs=cStats[c.id]||{orders:0,revenue:0,pending:0};
+            return `<tr>
+              <td>
+                <div class="fw600" style="border-left:3px solid ${c.color||'#f59e0b'};padding-left:8px">${c.name}</div>
+                <div class="sub">${c.origin||''}</div>
+              </td>
+              <td><span class="badge ${c.status==='active'?'badge-green':c.status==='incoming'?'badge-yellow':'badge-gray'}">${c.status}</span></td>
+              <td class="tr">${st.qty}</td>
+              <td class="tr ${st.available>0?'text-green':'text-red'}">${st.available}</td>
+              <td class="tr text-orange">${st.reserved}</td>
+              <td class="tr fw700">${cs.orders-cs.pending}</td>
+              <td class="tr fw700 text-gold">${fmtK(cs.revenue)}</td>
+              <td class="tr">${cs.pending}</td>
+            </tr>`; }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+</script>
+
+<script>
+// ── Bootstrap ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  showLogin();
+});
+</script>
+</body>
+</html>
